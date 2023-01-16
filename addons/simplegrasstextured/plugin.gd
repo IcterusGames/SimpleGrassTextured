@@ -144,14 +144,20 @@ func _on_button_draw_toggled(pressed : bool):
 	_edit_draw = pressed
 	if _edit_draw:
 		self._edit_erase = false
-	_decal_pointer.visible = _edit_draw or _edit_erase
+	if _grass_selected != null:
+		_decal_pointer.visible = _edit_draw or _edit_erase
+	else:
+		_decal_pointer.visible = false
 
 
 func _on_button_erase_toggled(pressed : bool):
 	_edit_erase = pressed
 	if _edit_erase:
 		self._edit_draw = false
-	_decal_pointer.visible = _edit_draw or _edit_erase
+	if _grass_selected != null:
+		_decal_pointer.visible = _edit_draw or _edit_erase
+	else:
+		_decal_pointer.visible = false
 
 
 func _on_edit_scale_value_changed(value : float):
