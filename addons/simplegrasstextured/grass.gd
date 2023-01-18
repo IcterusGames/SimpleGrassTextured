@@ -22,8 +22,8 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @tool
-class_name SimpleGrassTextured extends MultiMeshInstance3D
 @icon ("icon.png")
+class_name SimpleGrassTextured extends MultiMeshInstance3D
 
 @export var mesh : Mesh = null : set = _on_set_mesh
 @export var player_pos := Vector3(1000000, 1000000, 1000000) : set = _on_set_player_pos
