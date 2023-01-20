@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://dsim5cbhc6kwm"]
 
 [ext_resource type="Script" path="res://addons/simplegrasstextured/toolbar.gd" id="1_aa1o6"]
-[ext_resource type="Texture2D" uid="uid://bydmhs1jeab4x" path="res://addons/simplegrasstextured/icon.png" id="1_b52yy"]
+[ext_resource type="Texture2D" uid="uid://bsmcpupaj02v8" path="res://addons/simplegrasstextured/icon.svg" id="2_2ni6b"]
 
 [node name="Control" type="HBoxContainer"]
 anchors_preset = 15
@@ -18,8 +18,8 @@ layout_mode = 2
 [node name="TextureRect" type="TextureRect" parent="."]
 custom_minimum_size = Vector2(24, 0)
 layout_mode = 2
-texture = ExtResource("1_b52yy")
-stretch_mode = 5
+texture = ExtResource("2_2ni6b")
+stretch_mode = 3
 
 [node name="ButtonDraw" type="Button" parent="."]
 layout_mode = 2

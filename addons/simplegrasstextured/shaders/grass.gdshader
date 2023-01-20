@@ -43,7 +43,7 @@ uniform float optimization_level = 7.0;
 
 
 void vertex() {
-	float lev = 1.0 - UV.y;
+	float lev = COLOR.r;
 	float varid = float(INSTANCE_ID);
 	VERTEX.x += sin((TIME + varid) * wind_speed) * lev * ((1.0 - grass_strength) / 10.0);
 	VERTEX.x += wind_dir.x * lev * (wind_strength + (sin(TIME + varid) * 0.2 * (1.0 - grass_strength) * min(1.0, wind_speed)));

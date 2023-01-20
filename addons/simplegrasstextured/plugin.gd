@@ -24,11 +24,9 @@
 @tool
 extends EditorPlugin
 
-const _TOOLBAR := preload("toolbar.gd")
-
 var _raycast_3d : RayCast3D = null
 var _decal_pointer : Decal = null
-var _grass_selected : SimpleGrassTextured = null
+var _grass_selected = null
 var _timer_draw : Timer = null
 var _position_draw := Vector3.ZERO
 var _normal_draw := Vector3.ZERO
@@ -37,17 +35,23 @@ var _edit_radius := 2.0 : set = _on_set_radius
 var _edit_scale := Vector3.ONE
 var _edit_draw := true : set = _on_set_draw
 var _edit_erase := false : set = _on_set_erase
-var _gui_toolbar : _TOOLBAR = preload("toolbar.tscn").instantiate()
+var _gui_toolbar = null
 
 
 func _enter_tree():
-	add_custom_type("SimpleGrassTextured", "MultiMeshInstance3D", preload("grass.gd"), preload("icon.png"))
+	add_custom_type(
+		"SimpleGrassTextured",
+		"MultiMeshInstance3D",
+		load("res://addons/simplegrasstextured/grass.gd"),
+		load("res://addons/simplegrasstextured/icon.svg")
+	)
+	_gui_toolbar = load("res://addons/simplegrasstextured/toolbar.tscn").instantiate()
 	_gui_toolbar.visible = false
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_BOTTOM, _gui_toolbar)
 	_raycast_3d = RayCast3D.new()
 	_raycast_3d.visible = false
 	_decal_pointer = Decal.new()
-	_decal_pointer.set_texture(Decal.TEXTURE_ALBEDO, preload("images/pointer.png"))
+	_decal_pointer.set_texture(Decal.TEXTURE_ALBEDO, load("res://addons/simplegrasstextured/images/pointer.png"))
 	_decal_pointer.visible = false
 	_decal_pointer.scale = Vector3(_edit_radius, 20, _edit_radius)
 	_timer_draw = Timer.new()
@@ -77,7 +81,7 @@ func _get_plugin_name() -> String:
 
 
 func _handles(object) -> bool:
-	if object is SimpleGrassTextured and object.visible:
+	if object != null and object.has_meta("SimpleGrassTextured") and object.visible:
 		_grass_selected = object
 		return true
 	_grass_selected = null
@@ -208,4 +212,3 @@ func _on_timer_draw_timeout():
 		_grass_selected.erase(_position_draw, _edit_radius)
 	if _grass_selected.multimesh != null:
 		_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)
-

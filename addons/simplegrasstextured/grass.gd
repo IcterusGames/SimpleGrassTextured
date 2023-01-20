@@ -22,14 +22,13 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @tool
-@icon ("icon.png")
-class_name SimpleGrassTextured extends MultiMeshInstance3D
+extends MultiMeshInstance3D
 
 @export var mesh : Mesh = null : set = _on_set_mesh
 @export var player_pos := Vector3(1000000, 1000000, 1000000) : set = _on_set_player_pos
 @export var player_radius := 0.5 : set = _on_set_player_radius
 @export_color_no_alpha var albedo := Color.WHITE : set = _on_set_albedo
-@export var texture_albedo : Texture = preload("textures/grassbushcc008.png") : set = _on_set_texture_albedo
+@export var texture_albedo : Texture = load("res://addons/simplegrasstextured/textures/grassbushcc008.png") : set = _on_set_texture_albedo
 @export var alpha_scissor_threshold := 0.5 : set = _on_set_alpha_scissor_threshold
 @export var scale_h := 1.0 : set = _on_set_scale_h
 @export var scale_w := 1.0 : set = _on_set_scale_w
@@ -45,7 +44,8 @@ var dist_min : float = 0.0
 
 var _default_mesh : Mesh = null
 var _buffer_add : Array[Transform3D] = []
-var _material := preload("materials/grass.material").duplicate() as ShaderMaterial
+var _material := load("res://addons/simplegrasstextured/materials/grass.material").duplicate() as ShaderMaterial
+var _force_update_multimesh := false
 
 
 func _init():
@@ -57,6 +57,15 @@ func _ready():
 		set_process(true)
 	else:
 		set_process(false)
+	if not has_meta("SimpleGrassTextured"):
+		# Update for previous version, now shader needs vertex color
+		set_meta("SimpleGrassTextured", "1.0.2")
+		_force_update_multimesh = true
+		if multimesh != null:
+			if mesh != null:
+				multimesh.mesh = mesh
+			else:
+				multimesh.mesh = _default_mesh
 	if multimesh == null:
 		multimesh = MultiMesh.new()
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
@@ -83,9 +92,9 @@ func _ready():
 
 
 func _process(_delta : float):
-	if _buffer_add.size() == 0:
-		return
-	_update_multimesh()
+	if _buffer_add.size() != 0 or _force_update_multimesh:
+		_force_update_multimesh = false
+		_update_multimesh()
 
 
 func add_grass(pos : Vector3, normal : Vector3, scale : Vector3):
@@ -155,6 +164,7 @@ func _build_default_mesh() -> Mesh:
 	var array_mesh := ArrayMesh.new()
 	var vertices := PackedVector3Array()
 	var normals := PackedVector3Array()
+	var colors := PackedColorArray()
 	var uvs := PackedVector2Array()
 	var index := PackedInt32Array()
 	
@@ -182,6 +192,14 @@ func _build_default_mesh() -> Mesh:
 	uvs.push_back(Vector2(1, 1))
 	uvs.push_back(Vector2(0, 1))
 	uvs.push_back(Vector2(1, 0))
+	colors.push_back(Color(1, 0, 0))
+	colors.push_back(Color(0, 0, 0))
+	colors.push_back(Color(0, 0, 0))
+	colors.push_back(Color(1, 0, 0))
+	colors.push_back(Color(1, 0, 0))
+	colors.push_back(Color(0, 0, 0))
+	colors.push_back(Color(0, 0, 0))
+	colors.push_back(Color(1, 0, 0))
 	index.push_back(0)
 	index.push_back(1)
 	index.push_back(2)
@@ -200,6 +218,7 @@ func _build_default_mesh() -> Mesh:
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[ArrayMesh.ARRAY_NORMAL] = normals
 	arrays[ArrayMesh.ARRAY_TEX_UV] = uvs
+	arrays[ArrayMesh.ARRAY_COLOR] = colors
 	arrays[ArrayMesh.ARRAY_INDEX] = index
 	
 	array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
