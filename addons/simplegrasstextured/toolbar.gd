@@ -29,6 +29,48 @@ extends HBoxContainer
 @onready var slider_radius := $HSliderRadius as HSlider
 @onready var slider_density := $HSliderDensity as HSlider
 @onready var edit_scale := $SpinScale as SpinBox
+@onready var edit_rotation := $SpinRotation as SpinBox
+@onready var edit_rotation_rand := $SpinRotationRand as SpinBox
 @onready var edit_distance := $SpinDistanceMin as SpinBox
 @onready var chk_normals := $CheckFollowNormal as CheckBox
 @onready var label_stats := $LabelStats as Label
+
+@onready var _label_radius := $HSliderRadius/Label as Label
+@onready var _label_density := $HSliderDensity/Label as Label
+@onready var _tween_radius : Tween = null
+@onready var _tween_density : Tween = null
+
+
+func _ready():
+	_on_theme_changed()
+
+
+func _on_h_slider_radius_value_changed(value : float):
+	if _tween_radius != null:
+		_tween_radius.kill()
+	_label_radius.set("theme_override_colors/font_outline_color", _label_radius.get_theme_color("font_color").inverted())
+	_tween_radius = _label_radius.create_tween()
+	_tween_radius.tween_property(_label_radius, "modulate", Color(1,1,1,1), 0.1)
+	_tween_radius.tween_interval(2)
+	_tween_radius.tween_property(_label_radius, "modulate", Color(1,1,1,0), 2)
+	_label_radius.text = "%0.1f" % value
+
+
+func _on_h_slider_density_value_changed(value):
+	if _tween_density != null:
+		_tween_density.kill()
+	_label_density.set("theme_override_colors/font_outline_color", _label_density.get_theme_color("font_color").inverted())
+	_tween_density = _label_density.create_tween()
+	_tween_density.tween_property(_label_density, "modulate", Color(1,1,1,1), 0.1)
+	_tween_density.tween_interval(2)
+	_tween_density.tween_property(_label_density, "modulate", Color(1,1,1,0), 2)
+	_label_density.text = str(value)
+
+
+func _on_theme_changed():
+	$IconScale.texture = get_theme_icon("ToolScale", "EditorIcons")
+	$IconRotation.texture = get_theme_icon("ToolRotate", "EditorIcons")
+	$IconRotationRand.texture = get_theme_icon("RandomNumberGenerator", "EditorIcons")
+	$IconRadius.modulate = get_theme_color("font_color", "Label")
+	$IconDensity.modulate = get_theme_color("font_color", "Label")
+	$IconDistance.modulate = get_theme_color("font_color", "Label")

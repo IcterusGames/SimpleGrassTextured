@@ -36,30 +36,38 @@ uniform float scale_w = 1.0;
 uniform float scale_var : hint_range(-1.0, 1.0) = -0.25;
 uniform float grass_strength : hint_range(0.0, 1.0) = 0.8;
 uniform vec3 wind_dir = vec3(1.0, 0.0, 0.0);
-uniform float wind_strength = 0.03;
-uniform float wind_speed = 1.0;
+uniform float wind_strength = 0.15;
+uniform float wind_turbulence = 1.0;
+uniform sampler2D wind_pattern : source_color,filter_linear,repeat_enable;
 uniform bool optimization_by_distance = false;
 uniform float optimization_level = 7.0;
+uniform float optimization_dist_min = 10.0;
+uniform float optimization_dist_max = 50.0;
+uniform float grass_size_y = 1.0;
 
 
 void vertex() {
-	float lev = COLOR.r;
+	float lev = (VERTEX.y - NODE_POSITION_WORLD.y) / grass_size_y;
 	float varid = float(INSTANCE_ID);
-	VERTEX.x += sin((TIME + varid) * wind_speed) * lev * ((1.0 - grass_strength) / 10.0);
-	VERTEX.x += wind_dir.x * lev * (wind_strength + (sin(TIME + varid) * 0.2 * (1.0 - grass_strength) * min(1.0, wind_speed)));
-	VERTEX.y += sin((TIME + varid) * wind_speed) * lev * ((1.0 - grass_strength) / 10.0) * wind_dir.y;
-	VERTEX.y += wind_dir.y * lev * (wind_strength + (sin(TIME + varid) * 0.2 * (1.0 - grass_strength) * min(1.0, wind_speed)));
-	VERTEX.z += cos((TIME + varid) * wind_speed) * lev * ((1.0 - grass_strength) / 10.0);
-	VERTEX.z += wind_dir.z * lev * (wind_strength + (sin(TIME + varid) * 0.2 * (1.0 - grass_strength) * min(1.0, wind_speed)));
+	float text_wind = texture(wind_pattern, (vec2(NODE_POSITION_WORLD.x, NODE_POSITION_WORLD.z) * 0.005) - (vec2(wind_dir.x, wind_dir.z) * TIME * (0.1 * wind_strength))).r;
+	VERTEX.x += text_wind * lev * wind_strength * wind_dir.x;
+	VERTEX.z += text_wind * lev * wind_strength * wind_dir.z;
+	VERTEX.x += sin((TIME + varid) * wind_turbulence) * lev * ((1.0 - grass_strength) / 10.0);
+	VERTEX.x += wind_dir.x * lev * (wind_strength + (sin(TIME + varid) * 0.2 * (1.0 - grass_strength) * min(1.0, wind_turbulence)));
+	VERTEX.y += sin((TIME + varid) * wind_turbulence) * lev * ((1.0 - grass_strength) / 10.0) * wind_dir.y;
+	VERTEX.y += wind_dir.y * lev * (wind_strength + (sin(TIME + varid) * 0.2 * (1.0 - grass_strength) * min(1.0, wind_turbulence)));
+	VERTEX.z += cos((TIME + varid) * wind_turbulence) * lev * ((1.0 - grass_strength) / 10.0);
+	VERTEX.z += wind_dir.z * lev * (wind_strength + (sin(TIME + varid) * 0.2 * (1.0 - grass_strength) * min(1.0, wind_turbulence)));
 	vec3 align = VERTEX - NODE_POSITION_WORLD;
-	float varh = ((float(INSTANCE_ID % 5) / 5.0) * scale_var * lev);
+	float varh = ((float(INSTANCE_ID % 5) / 5.0) * scale_var);
 	float varw = ((float(INSTANCE_ID % 5) / 5.0) * scale_var);
 	float dist = 1.0;
 	if(optimization_by_distance) {
-		dist = distance(NODE_POSITION_WORLD, CAMERA_POSITION_WORLD);
-		dist = 1.0 - clamp(0.0, 1.0, float(INSTANCE_ID % int(max(1.0, dist / optimization_level))));
+		float node_dist = distance(NODE_POSITION_WORLD, CAMERA_POSITION_WORLD);
+		dist = 1.0 - clamp(0.0, 1.0, float(INSTANCE_ID % int(max(1.0, node_dist / optimization_level))));
+		dist *= smoothstep(optimization_dist_max, optimization_dist_min, node_dist);
 	}
-	VERTEX.y = ((align.y + varh) * scale_h * dist) + NODE_POSITION_WORLD.y;
+	VERTEX.y = (align.y * ((varh * scale_h) + scale_h) * dist) + NODE_POSITION_WORLD.y;
 	VERTEX.x = (align.x * (scale_w - varw) * dist) + NODE_POSITION_WORLD.x;
 	VERTEX.z = (align.z * (scale_w - varw) * dist) + NODE_POSITION_WORLD.z;
 	float dist_player = 1.0 - clamp(0.0, 1.0, distance(NODE_POSITION_WORLD, player_pos) / max(player_radius, 0.1));

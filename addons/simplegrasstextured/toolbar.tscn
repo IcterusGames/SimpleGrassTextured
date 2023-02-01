@@ -1,7 +1,22 @@
-[gd_scene load_steps=3 format=3 uid="uid://dsim5cbhc6kwm"]
+[gd_scene load_steps=8 format=3 uid="uid://dsim5cbhc6kwm"]
 
 [ext_resource type="Script" path="res://addons/simplegrasstextured/toolbar.gd" id="1_aa1o6"]
 [ext_resource type="Texture2D" uid="uid://bsmcpupaj02v8" path="res://addons/simplegrasstextured/icon.svg" id="2_2ni6b"]
+[ext_resource type="Texture2D" uid="uid://clm6vd2es8xm7" path="res://addons/simplegrasstextured/images/icon_radius.svg" id="3_sf2nv"]
+[ext_resource type="Texture2D" uid="uid://tqiak77omdnr" path="res://addons/simplegrasstextured/images/icon_density.svg" id="4_4c5wp"]
+[ext_resource type="Texture2D" uid="uid://d28dlfkm62t6e" path="res://addons/simplegrasstextured/images/icon_distance.svg" id="5_uonyg"]
+
+[sub_resource type="Image" id="Image_tbt8h"]
+data = {
+"data": PackedByteArray(255, 255, 255, 0, 255, 255, 255, 0, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 231, 255, 93, 93, 55, 255, 97, 97, 58, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 231, 255, 94, 94, 54, 255, 94, 94, 57, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 93, 93, 41, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 97, 97, 42, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 98, 98, 47, 255, 97, 97, 42, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 235, 255, 93, 93, 233, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 94, 94, 46, 255, 93, 93, 236, 255, 93, 93, 233, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0),
+"format": "RGBA8",
+"height": 16,
+"mipmaps": false,
+"width": 16
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_ms2vh"]
+image = SubResource("Image_tbt8h")
 
 [node name="Control" type="HBoxContainer"]
 anchors_preset = 15
@@ -36,49 +51,79 @@ flat = true
 [node name="VSeparator2" type="VSeparator" parent="."]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="."]
+[node name="IconRadius" type="TextureRect" parent="."]
+texture_filter = 1
 layout_mode = 2
-text = "Radius"
-vertical_alignment = 1
+texture = ExtResource("3_sf2nv")
+stretch_mode = 3
 
 [node name="HSliderRadius" type="HSlider" parent="."]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 size_flags_vertical = 1
+tooltip_text = "Radius"
 min_value = 0.1
 max_value = 10.0
 step = 0.1
 value = 1.0
 
+[node name="Label" type="Label" parent="HSliderRadius"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Separator" type="Control" parent="."]
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="."]
+[node name="IconDensity" type="TextureRect" parent="."]
+texture_filter = 1
 layout_mode = 2
-text = "Density"
-vertical_alignment = 1
+texture = ExtResource("4_4c5wp")
+stretch_mode = 3
 
 [node name="HSliderDensity" type="HSlider" parent="."]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 size_flags_vertical = 1
+tooltip_text = "Density"
 min_value = 1.0
 max_value = 200.0
 value = 1.0
+
+[node name="Label" type="Label" parent="HSliderDensity"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Separator2" type="Control" parent="."]
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
-[node name="Label3" type="Label" parent="."]
+[node name="IconScale" type="TextureRect" parent="."]
+texture_filter = 1
 layout_mode = 2
-text = "Scale:"
-vertical_alignment = 1
+texture = SubResource("ImageTexture_ms2vh")
+stretch_mode = 3
 
 [node name="SpinScale" type="SpinBox" parent="."]
 layout_mode = 2
 size_flags_vertical = 4
+tooltip_text = "Scale"
 min_value = 0.01
 step = 0.01
 value = 1.0
@@ -88,18 +133,53 @@ select_all_on_focus = true
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
-[node name="Label4" type="Label" parent="."]
+[node name="IconRotation" type="TextureRect" parent="."]
+texture_filter = 1
 layout_mode = 2
-text = "Distance Min"
-vertical_alignment = 1
+texture = SubResource("ImageTexture_ms2vh")
+stretch_mode = 3
+
+[node name="SpinRotation" type="SpinBox" parent="."]
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Rotation"
+max_value = 360.0
+step = 0.1
+select_all_on_focus = true
+
+[node name="IconRotationRand" type="TextureRect" parent="."]
+texture_filter = 1
+layout_mode = 2
+texture = SubResource("ImageTexture_ms2vh")
+stretch_mode = 3
+
+[node name="SpinRotationRand" type="SpinBox" parent="."]
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Rotation randomizer"
+max_value = 1.0
+step = 0.01
+value = 1.0
+select_all_on_focus = true
+
+[node name="Separator4" type="Control" parent="."]
+custom_minimum_size = Vector2(15, 0)
+layout_mode = 2
+
+[node name="IconDistance" type="TextureRect" parent="."]
+texture_filter = 1
+layout_mode = 2
+texture = ExtResource("5_uonyg")
+stretch_mode = 3
 
 [node name="SpinDistanceMin" type="SpinBox" parent="."]
 layout_mode = 2
 size_flags_vertical = 4
+tooltip_text = "Minimum distance between grasses"
 step = 0.01
 select_all_on_focus = true
 
-[node name="Separator4" type="Control" parent="."]
+[node name="Separator5" type="Control" parent="."]
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
@@ -114,3 +194,7 @@ size_flags_horizontal = 3
 text = "Count: 0"
 horizontal_alignment = 2
 vertical_alignment = 1
+
+[connection signal="theme_changed" from="." to="." method="_on_theme_changed"]
+[connection signal="value_changed" from="HSliderRadius" to="." method="_on_h_slider_radius_value_changed"]
+[connection signal="value_changed" from="HSliderDensity" to="." method="_on_h_slider_density_value_changed"]

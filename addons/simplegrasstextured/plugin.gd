@@ -24,15 +24,20 @@
 @tool
 extends EditorPlugin
 
+const DEPTH_BRUSH := 10.0
+
 var _raycast_3d : RayCast3D = null
 var _decal_pointer : Decal = null
 var _grass_selected = null
 var _timer_draw : Timer = null
 var _position_draw := Vector3.ZERO
 var _normal_draw := Vector3.ZERO
+var _object_draw : Object = null
 var _edit_density := 25
-var _edit_radius := 2.0 : set = _on_set_radius
+var _edit_radius := 2.0
 var _edit_scale := Vector3.ONE
+var _edit_rotation := 0.0
+var _edit_rotation_rand := 1.0
 var _edit_draw := true : set = _on_set_draw
 var _edit_erase := false : set = _on_set_erase
 var _gui_toolbar = null
@@ -53,18 +58,21 @@ func _enter_tree():
 	_decal_pointer = Decal.new()
 	_decal_pointer.set_texture(Decal.TEXTURE_ALBEDO, load("res://addons/simplegrasstextured/images/pointer.png"))
 	_decal_pointer.visible = false
-	_decal_pointer.scale = Vector3(_edit_radius, 20, _edit_radius)
+	_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
 	_timer_draw = Timer.new()
 	_timer_draw.timeout.connect(_on_timer_draw_timeout)
 	add_child(_raycast_3d)
 	add_child(_decal_pointer)
 	add_child(_timer_draw)
-	_gui_toolbar.slider_radius.value_changed.connect(func(value:float): _edit_radius = value)
-	_gui_toolbar.slider_density.value_changed.connect(func(value:float): _edit_density = value)
+	_gui_toolbar.slider_radius.value_changed.connect(_on_slider_radius_value_changed)
+	_gui_toolbar.slider_density.value_changed.connect(_on_slider_density_value_changed)
 	_gui_toolbar.button_draw.toggled.connect(_on_button_draw_toggled)
 	_gui_toolbar.button_erase.toggled.connect(_on_button_erase_toggled)
 	_gui_toolbar.edit_scale.value_changed.connect(_on_edit_scale_value_changed)
+	_gui_toolbar.edit_rotation.value_changed.connect(_on_edit_rotation_value_changed)
+	_gui_toolbar.edit_rotation_rand.value_changed.connect(_on_edit_rotation_rand_value_changed)
 	_gui_toolbar.edit_distance.value_changed.connect(_on_edit_distance_value_changed)
+	_gui_toolbar.chk_normals.toggled.connect(_on_chk_normals_toggled)
 	self._edit_draw = true
 
 
@@ -94,10 +102,14 @@ func _edit(object : Variant):
 
 func _make_visible(visible : bool):
 	if visible:
-		_gui_toolbar.slider_radius.value = _edit_radius
-		_gui_toolbar.slider_density.value = _edit_density
 		if _grass_selected != null:
-			_gui_toolbar.edit_distance.value = _grass_selected.dist_min
+			_gui_toolbar.slider_radius.value = _grass_selected.sgt_radius
+			_gui_toolbar.slider_density.value = _grass_selected.sgt_density
+			_gui_toolbar.edit_scale.value = _grass_selected.sgt_scale
+			_gui_toolbar.edit_rotation.value = _grass_selected.sgt_rotation
+			_gui_toolbar.edit_rotation_rand.value = _grass_selected.sgt_rotation_rand
+			_gui_toolbar.edit_distance.value = _grass_selected.sgt_dist_min
+			_gui_toolbar.chk_normals.button_pressed = _grass_selected.sgt_follow_normal
 			if _grass_selected.multimesh != null:
 				_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)
 		_gui_toolbar.visible = true
@@ -117,29 +129,49 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			if not (_edit_draw or _edit_erase):
 				return EditorPlugin.AFTER_GUI_INPUT_PASS
 			if event.pressed:
-				var normal := viewport_camera.project_ray_normal(event.position)
-				_raycast_3d.position = viewport_camera.project_ray_origin(event.position)
-				_raycast_3d.target_position = normal * 100000
+				_raycast_3d.global_transform.origin = viewport_camera.project_ray_origin(event.position)
+				_raycast_3d.global_transform.basis.y = viewport_camera.project_ray_normal(event.position)
+				_raycast_3d.target_position = Vector3(0, 100000, 0)
 				_raycast_3d.force_raycast_update()
 				if _raycast_3d.is_colliding():
 					_position_draw = _raycast_3d.get_collision_point()
 					_normal_draw = _raycast_3d.get_collision_normal()
+					_object_draw = _raycast_3d.get_collider()
 					_on_timer_draw_timeout()
 					_timer_draw.start(0.15)
+				else:
+					_object_draw = null
 			else:
+				_object_draw = null
 				_timer_draw.stop()
 			return EditorPlugin.AFTER_GUI_INPUT_STOP
 	if event is InputEventMouseMotion:
-		var normal := viewport_camera.project_ray_normal(event.position)
-		_raycast_3d.position = viewport_camera.project_ray_origin(event.position)
-		_raycast_3d.target_position = normal * 100000
+		_raycast_3d.global_transform.origin = viewport_camera.project_ray_origin(event.position)
+		_raycast_3d.global_transform.basis.y = viewport_camera.project_ray_normal(event.position)
+		_raycast_3d.target_position = Vector3(0, 100000, 0)
 		_raycast_3d.force_raycast_update()
-		if not _raycast_3d.is_colliding():
+		if ( not _raycast_3d.is_colliding()
+		or ( _object_draw != null and _raycast_3d.get_collider() != _object_draw )):
 			_decal_pointer.visible = false
+			_timer_draw.paused = true
 			return EditorPlugin.AFTER_GUI_INPUT_PASS
+		else:
+			_timer_draw.paused = false
 		_position_draw = _raycast_3d.get_collision_point()
 		_normal_draw = _raycast_3d.get_collision_normal()
-		_decal_pointer.position = _position_draw
+		var trans := Transform3D()
+		if abs(_normal_draw.z) == 1:
+			trans.basis.x = Vector3(1,0,0)
+			trans.basis.y = Vector3(0,0,_normal_draw.z)
+			trans.basis.z = Vector3(0,_normal_draw.z,0)
+		else:
+			trans.basis.y = _normal_draw
+			trans.basis.x = _normal_draw.cross(trans.basis.z)
+			trans.basis.z = trans.basis.x.cross(_normal_draw)
+			trans.basis = trans.basis.orthonormalized()
+		trans.origin = _position_draw
+		_decal_pointer.global_transform = trans
+		_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
 		_decal_pointer.visible = _edit_draw or _edit_erase
 	return EditorPlugin.AFTER_GUI_INPUT_PASS
 
@@ -164,18 +196,45 @@ func _on_button_erase_toggled(pressed : bool):
 		_decal_pointer.visible = false
 
 
+func _on_slider_radius_value_changed(value : float):
+	_edit_radius = value
+	_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
+	if _grass_selected != null:
+		_grass_selected.sgt_radius = value
+
+
+func _on_slider_density_value_changed(value : float):
+	_edit_density = value
+	if _grass_selected != null:
+		_grass_selected.sgt_density = value
+
+
 func _on_edit_scale_value_changed(value : float):
 	_edit_scale = Vector3(value, value, value)
+	if _grass_selected != null:
+		_grass_selected.sgt_scale = value
+
+
+func _on_edit_rotation_value_changed(value : float):
+	_edit_rotation = value
+	if _grass_selected != null:
+		_grass_selected.sgt_rotation = value
+
+
+func _on_edit_rotation_rand_value_changed(value : float):
+	_edit_rotation_rand = value
+	if _grass_selected != null:
+		_grass_selected.sgt_rotation_rand = value
 
 
 func _on_edit_distance_value_changed(value : float):
 	if _grass_selected != null:
-		_grass_selected.dist_min = value
+		_grass_selected.sgt_dist_min = value
 
 
-func _on_set_radius(value : float):
-	_edit_radius = value
-	_decal_pointer.scale = Vector3(_edit_radius, 20, _edit_radius)
+func _on_chk_normals_toggled(pressed : bool):
+	if _grass_selected != null:
+		_grass_selected.sgt_follow_normal = pressed
 
 
 func _on_set_draw(value : bool):
@@ -199,16 +258,26 @@ func _on_timer_draw_timeout():
 		return
 	if _edit_draw:
 		for i in _edit_density:
-			var variation := Vector3(randf() * _edit_radius, 1, 0).rotated(Vector3.UP, randf() * TAU)
-			_raycast_3d.global_position = _position_draw + variation
-			_raycast_3d.target_position = Vector3(0, -20, 0)
+			var variation = Vector3.RIGHT * _edit_radius * randf()
+			variation = variation.rotated(Vector3.UP, randf() * TAU)
+			variation = _decal_pointer.to_global(variation) - _decal_pointer.global_position
+			_raycast_3d.global_transform.basis.x = Vector3.RIGHT
+			_raycast_3d.global_transform.basis.y = _normal_draw * -1
+			_raycast_3d.global_transform.basis.z = Vector3.BACK
+			_raycast_3d.global_transform.origin = _position_draw + _normal_draw + variation
+			_raycast_3d.target_position = Vector3(0, DEPTH_BRUSH, 0)
 			_raycast_3d.force_raycast_update()
-			if _raycast_3d.is_colliding():
+			if _raycast_3d.is_colliding() and _raycast_3d.get_collider() == _object_draw:
 				var normal := Vector3.UP
 				if _gui_toolbar.chk_normals.button_pressed:
 					normal = _raycast_3d.get_collision_normal()
-				_grass_selected.add_grass(_raycast_3d.get_collision_point(), normal, _edit_scale)
+				_grass_selected.add_grass(
+					_raycast_3d.get_collision_point() - _grass_selected.global_position,
+					normal,
+					_edit_scale,
+					deg_to_rad(_edit_rotation) + (PI * (_edit_rotation_rand - (randf() * _edit_rotation_rand * 2.0)))
+				)
 	elif _edit_erase:
-		_grass_selected.erase(_position_draw, _edit_radius)
+		_grass_selected.erase(_position_draw - _grass_selected.global_position, _edit_radius)
 	if _grass_selected.multimesh != null:
 		_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)

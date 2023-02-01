@@ -29,27 +29,47 @@ extends MultiMeshInstance3D
 @export var player_radius := 0.5 : set = _on_set_player_radius
 @export_color_no_alpha var albedo := Color.WHITE : set = _on_set_albedo
 @export var texture_albedo : Texture = load("res://addons/simplegrasstextured/textures/grassbushcc008.png") : set = _on_set_texture_albedo
-@export var alpha_scissor_threshold := 0.5 : set = _on_set_alpha_scissor_threshold
+@export_range(0.0, 1.0) var alpha_scissor_threshold := 0.5 : set = _on_set_alpha_scissor_threshold
 @export var scale_h := 1.0 : set = _on_set_scale_h
 @export var scale_w := 1.0 : set = _on_set_scale_w
 @export var scale_var := -0.25 : set = _on_set_scale_var
 @export_range(0.0, 1.0) var grass_strength := 0.8 : set = _on_set_grass_strength
 @export var wind_dir := Vector3.RIGHT : set = _on_set_wind_dir
-@export var wind_strength := 0.03 : set = _on_set_wind_strength
-@export var wind_speed := 1.0 : set = _on_set_wind_speed
+@export var wind_strength := 0.15 : set = _on_set_wind_strength
+@export var wind_turbulence := 1.0 : set = _on_set_wind_turbulence
+@export var wind_pattern : Texture = load("res://addons/simplegrasstextured/images/win_pattern.png") : set = _on_set_wind_pattern
+@export_group("Optimization")
 @export var optimization_by_distance := false : set = _on_set_optimization_by_distance
 @export var optimization_level := 7.0 : set = _on_set_optimization_level
+@export var optimization_dist_min := 10.0 : set = _on_set_optimization_dist_min
+@export var optimization_dist_max := 50.0 : set = _on_set_optimization_dist_max
 
-var dist_min : float = 0.0
+var sgt_radius := 2.0
+var sgt_density := 25
+var sgt_scale := 1.0
+var sgt_rotation := 0.0
+var sgt_rotation_rand := 1.0
+var sgt_dist_min := 0.0
+var sgt_follow_normal := false
 
 var _default_mesh : Mesh = null
 var _buffer_add : Array[Transform3D] = []
 var _material := load("res://addons/simplegrasstextured/materials/grass.material").duplicate() as ShaderMaterial
 var _force_update_multimesh := false
+var _properties = []
 
 
 func _init():
 	_default_mesh = _build_default_mesh()
+	if Engine.is_editor_hint():
+		for var_i in get_property_list():
+			if not var_i.name.begins_with("sgt_"):
+				continue
+			_properties.append({
+				"name": var_i.name,
+				"type": var_i.type,
+				"usage": PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE,
+			})
 
 
 func _ready():
@@ -58,7 +78,7 @@ func _ready():
 	else:
 		set_process(false)
 	if not has_meta("SimpleGrassTextured"):
-		# Update for previous version, now shader needs vertex color
+		# Update for previous version, 1.0.2 needs vertex color
 		set_meta("SimpleGrassTextured", "1.0.2")
 		_force_update_multimesh = true
 		if multimesh != null:
@@ -86,9 +106,12 @@ func _ready():
 	_on_set_grass_strength(grass_strength)
 	_on_set_wind_dir(wind_dir)
 	_on_set_wind_strength(wind_strength)
-	_on_set_wind_speed(wind_speed)
+	_on_set_wind_turbulence(wind_turbulence)
+	_on_set_wind_pattern(wind_pattern)
 	_on_set_optimization_by_distance(optimization_by_distance)
 	_on_set_optimization_level(optimization_level)
+	_on_set_optimization_dist_min(optimization_dist_min)
+	_on_set_optimization_dist_max(optimization_dist_max)
 
 
 func _process(_delta : float):
@@ -97,15 +120,30 @@ func _process(_delta : float):
 		_update_multimesh()
 
 
-func add_grass(pos : Vector3, normal : Vector3, scale : Vector3):
+func _get_property_list() -> Array:
+	if _properties == null:
+		return []
+	return _properties
+
+
+func add_grass(pos : Vector3, normal : Vector3, scale : Vector3, rotated : float):
 	var trans := Transform3D()
-	trans = trans.rotated(Vector3.UP, TAU * randf())
-	trans.basis.y = normal
+	if abs(normal.z) == 1:
+		trans.basis.x = Vector3(1,0,0)
+		trans.basis.y = Vector3(0,0,normal.z)
+		trans.basis.z = Vector3(0,normal.z,0)
+		trans.basis = trans.basis.orthonormalized()
+	else:
+		trans.basis.y = normal
+		trans.basis.x = normal.cross(trans.basis.z)
+		trans.basis.z = trans.basis.x.cross(normal)
+		trans.basis = trans.basis.orthonormalized()
+	trans = trans.rotated_local(Vector3.UP, rotated)
 	trans = trans.scaled(scale)
 	trans = trans.translated(pos)
-	if dist_min > 0:
+	if sgt_dist_min > 0:
 		for trans_prev in _buffer_add:
-			if trans.origin.distance_to(trans_prev.origin) <= dist_min:
+			if trans.origin.distance_to(trans_prev.origin) <= sgt_dist_min:
 				return
 	_buffer_add.append(trans)
 
@@ -141,11 +179,27 @@ func _update_multimesh():
 		multi_new.mesh = mesh
 	else:
 		multi_new.mesh = _default_mesh
-	if _buffer_add.size() > 0 and dist_min > 0:
+	if _buffer_add.size() > 0 and sgt_dist_min > 0:
+		var pos_min := Vector3(10000000, 10000000, 10000000)
+		var pos_max := pos_min * -1
+		var center := Vector3.ZERO
+		var radius := 0.0
+		var r_index := []
+		for trans in _buffer_add:
+			if pos_min > trans.origin:
+				pos_min = trans.origin
+			if pos_max < trans.origin:
+				pos_max = trans.origin
+		center = pos_min + ((pos_max - pos_min) / 2.0)
+		radius = center.distance_to(pos_min) + 1.0
 		for i in range(multimesh.instance_count):
 			var trans := multimesh.get_instance_transform(i)
+			if trans.origin.distance_to(center) <= radius:
+				r_index.append(i)
+		for i in r_index:
+			var trans := multimesh.get_instance_transform(i)
 			for trans_add in _buffer_add:
-				if trans_add.origin.distance_to(trans.origin) <= dist_min:
+				if trans_add.origin.distance_to(trans.origin) <= sgt_dist_min:
 					_buffer_add.erase(trans_add)
 					break
 	multi_new.instance_count = count_prev + _buffer_add.size()
@@ -227,6 +281,11 @@ func _build_default_mesh() -> Mesh:
 
 func _on_set_mesh(value : Mesh):
 	mesh = value
+	if _material != null:
+		if mesh != null:
+			_material.set_shader_parameter("grass_size_y", mesh.get_aabb().size.y)
+		else:
+			_material.set_shader_parameter("grass_size_y", 1.0)
 	if Engine.is_editor_hint() and is_inside_tree():
 		_update_multimesh()
 
@@ -297,10 +356,16 @@ func _on_set_wind_strength(value : float):
 		_material.set_shader_parameter("wind_strength", wind_strength)
 
 
-func _on_set_wind_speed(value : float):
-	wind_speed = value
+func _on_set_wind_turbulence(value : float):
+	wind_turbulence = value
 	if _material != null:
-		_material.set_shader_parameter("wind_speed", wind_speed)
+		_material.set_shader_parameter("wind_turbulence", wind_turbulence)
+
+
+func _on_set_wind_pattern(value : Texture):
+	wind_pattern = value
+	if _material != null:
+		_material.set_shader_parameter("wind_pattern", wind_pattern)
 
 
 func _on_set_optimization_by_distance(value : bool):
@@ -313,3 +378,16 @@ func _on_set_optimization_level(value : float):
 	optimization_level = value
 	if _material != null:
 		_material.set_shader_parameter("optimization_level", optimization_level)
+
+
+func _on_set_optimization_dist_min(value : float):
+	optimization_dist_min = value
+	if _material != null:
+		_material.set_shader_parameter("optimization_dist_min", optimization_dist_min)
+
+
+func _on_set_optimization_dist_max(value : float):
+	optimization_dist_max = value
+	if _material != null:
+		_material.set_shader_parameter("optimization_dist_max", optimization_dist_max)
+
