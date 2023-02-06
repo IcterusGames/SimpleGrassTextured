@@ -1,0 +1,52 @@
+[gd_scene load_steps=5 format=3 uid="uid://cb8klhv6nwvtl"]
+
+[ext_resource type="Texture2D" uid="uid://bsmcpupaj02v8" path="res://addons/simplegrasstextured/icon.svg" id="1_at31v"]
+[ext_resource type="Script" path="res://addons/simplegrasstextured/about.gd" id="1_r23hh"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hnw4u"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lwftf"]
+
+[node name="Control" type="AcceptDialog"]
+title = "About"
+size = Vector2i(520, 215)
+min_size = Vector2i(520, 200)
+max_size = Vector2i(1280, 720)
+script = ExtResource("1_r23hh")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 512.0
+offset_bottom = 166.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("1_at31v")
+stretch_mode = 4
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/focus = SubResource("StyleBoxEmpty_hnw4u")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lwftf")
+bbcode_enabled = true
+text = "Simple Grass Textured Plugin
+v. 1.0.4
+by IcterusGames
+[font_size=7] [/font_size]
+[url]https://icterusgames.itch.io/[/url]
+[font_size=7] [/font_size]
+[url]https://github.com/IcterusGames/SimpleGrassTextured[/url]
+"
+
+[connection signal="meta_clicked" from="MarginContainer/HBoxContainer/RichTextLabel" to="." method="_on_rich_text_label_meta_clicked"]

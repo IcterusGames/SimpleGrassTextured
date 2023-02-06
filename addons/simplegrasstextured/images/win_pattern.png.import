@@ -5,7 +5,7 @@ type="CompressedTexture2D"
 uid="uid://i566v0wqsfa"
 path.s3tc="res://.godot/imported/win_pattern.png-c44fa1ee331bdb684ff53320dba8c2b3.s3tc.ctex"
 metadata={
-"imported_formats": ["s3tc"],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 
@@ -17,9 +17,9 @@ dest_files=["res://.godot/imported/win_pattern.png-c44fa1ee331bdb684ff53320dba8c
 [params]
 
 compress/mode=2
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1
-compress/bptc_ldr=0
 compress/normal_map=0
 compress/channel_pack=0
 mipmaps/generate=true

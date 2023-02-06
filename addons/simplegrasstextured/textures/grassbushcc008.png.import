@@ -5,7 +5,7 @@ type="CompressedTexture2D"
 uid="uid://c4ggdp0kg5wjk"
 path.s3tc="res://.godot/imported/grassbushcc008.png-7110abc2a2a9dc117662bb95ed60be39.s3tc.ctex"
 metadata={
-"imported_formats": ["s3tc"],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 
@@ -17,9 +17,9 @@ dest_files=["res://.godot/imported/grassbushcc008.png-7110abc2a2a9dc117662bb95ed
 [params]
 
 compress/mode=2
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1
-compress/bptc_ldr=0
 compress/normal_map=0
 compress/channel_pack=0
 mipmaps/generate=true

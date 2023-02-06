@@ -26,10 +26,15 @@ extends EditorPlugin
 
 const DEPTH_BRUSH := 10.0
 
+enum EVENT_MOUSE {
+	EVENT_NONE,
+	EVENT_MOVE,
+	EVENT_CLICK,
+}
+
 var _raycast_3d : RayCast3D = null
 var _decal_pointer : Decal = null
 var _grass_selected = null
-var _timer_draw : Timer = null
 var _position_draw := Vector3.ZERO
 var _normal_draw := Vector3.ZERO
 var _object_draw : Object = null
@@ -41,6 +46,11 @@ var _edit_rotation_rand := 1.0
 var _edit_draw := true : set = _on_set_draw
 var _edit_erase := false : set = _on_set_erase
 var _gui_toolbar = null
+var _time_draw := 0
+var _draw_paused := true
+var _mouse_event := EVENT_MOUSE.EVENT_NONE
+var _project_ray_origin := Vector3.INF
+var _project_ray_normal := Vector3.INF
 
 
 func _enter_tree():
@@ -59,11 +69,8 @@ func _enter_tree():
 	_decal_pointer.set_texture(Decal.TEXTURE_ALBEDO, load("res://addons/simplegrasstextured/images/pointer.png"))
 	_decal_pointer.visible = false
 	_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
-	_timer_draw = Timer.new()
-	_timer_draw.timeout.connect(_on_timer_draw_timeout)
 	add_child(_raycast_3d)
 	add_child(_decal_pointer)
-	add_child(_timer_draw)
 	_gui_toolbar.slider_radius.value_changed.connect(_on_slider_radius_value_changed)
 	_gui_toolbar.slider_density.value_changed.connect(_on_slider_density_value_changed)
 	_gui_toolbar.button_draw.toggled.connect(_on_button_draw_toggled)
@@ -91,6 +98,7 @@ func _get_plugin_name() -> String:
 func _handles(object) -> bool:
 	if object != null and object.has_meta("SimpleGrassTextured") and object.visible:
 		_grass_selected = object
+		_update_gui()
 		return true
 	_grass_selected = null
 	return false
@@ -98,20 +106,13 @@ func _handles(object) -> bool:
 
 func _edit(object : Variant):
 	_grass_selected = object
+	_update_gui()
 
 
 func _make_visible(visible : bool):
 	if visible:
 		if _grass_selected != null:
-			_gui_toolbar.slider_radius.value = _grass_selected.sgt_radius
-			_gui_toolbar.slider_density.value = _grass_selected.sgt_density
-			_gui_toolbar.edit_scale.value = _grass_selected.sgt_scale
-			_gui_toolbar.edit_rotation.value = _grass_selected.sgt_rotation
-			_gui_toolbar.edit_rotation_rand.value = _grass_selected.sgt_rotation_rand
-			_gui_toolbar.edit_distance.value = _grass_selected.sgt_dist_min
-			_gui_toolbar.chk_normals.button_pressed = _grass_selected.sgt_follow_normal
-			if _grass_selected.multimesh != null:
-				_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)
+			_update_gui()
 		_gui_toolbar.visible = true
 	else:
 		_gui_toolbar.visible = false
@@ -119,44 +120,37 @@ func _make_visible(visible : bool):
 		_grass_selected = null
 
 
-func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
-	if _grass_selected == null:
-		return EditorPlugin.AFTER_GUI_INPUT_PASS
-	if _grass_selected.multimesh != null:
-		_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if not (_edit_draw or _edit_erase):
-				return EditorPlugin.AFTER_GUI_INPUT_PASS
-			if event.pressed:
-				_raycast_3d.global_transform.origin = viewport_camera.project_ray_origin(event.position)
-				_raycast_3d.global_transform.basis.y = viewport_camera.project_ray_normal(event.position)
-				_raycast_3d.target_position = Vector3(0, 100000, 0)
-				_raycast_3d.force_raycast_update()
-				if _raycast_3d.is_colliding():
-					_position_draw = _raycast_3d.get_collision_point()
-					_normal_draw = _raycast_3d.get_collision_normal()
-					_object_draw = _raycast_3d.get_collider()
-					_on_timer_draw_timeout()
-					_timer_draw.start(0.15)
-				else:
-					_object_draw = null
-			else:
-				_object_draw = null
-				_timer_draw.stop()
-			return EditorPlugin.AFTER_GUI_INPUT_STOP
-	if event is InputEventMouseMotion:
-		_raycast_3d.global_transform.origin = viewport_camera.project_ray_origin(event.position)
-		_raycast_3d.global_transform.basis.y = viewport_camera.project_ray_normal(event.position)
+func _physics_process(_delta):
+	if _mouse_event == EVENT_MOUSE.EVENT_CLICK:
+		_raycast_3d.global_transform.origin = _project_ray_origin
+		_raycast_3d.global_transform.basis.y = _project_ray_normal
+		_raycast_3d.target_position = Vector3(0, 100000, 0)
+		_raycast_3d.force_raycast_update()
+		if _raycast_3d.is_colliding():
+			_position_draw = _raycast_3d.get_collision_point()
+			_normal_draw = _raycast_3d.get_collision_normal()
+			_object_draw = _raycast_3d.get_collider()
+			_eval_brush()
+			_time_draw = Time.get_ticks_msec()
+			_draw_paused = false
+		else:
+			_time_draw = 0
+			_draw_paused = true
+			_object_draw = null
+		_mouse_event = EVENT_MOUSE.EVENT_NONE
+	elif _mouse_event == EVENT_MOUSE.EVENT_MOVE:
+		_raycast_3d.global_transform.origin = _project_ray_origin
+		_raycast_3d.global_transform.basis.y = _project_ray_normal
 		_raycast_3d.target_position = Vector3(0, 100000, 0)
 		_raycast_3d.force_raycast_update()
 		if ( not _raycast_3d.is_colliding()
 		or ( _object_draw != null and _raycast_3d.get_collider() != _object_draw )):
 			_decal_pointer.visible = false
-			_timer_draw.paused = true
-			return EditorPlugin.AFTER_GUI_INPUT_PASS
+			_draw_paused = true
+			_mouse_event = EVENT_MOUSE.EVENT_NONE
+			return
 		else:
-			_timer_draw.paused = false
+			_draw_paused = false
 		_position_draw = _raycast_3d.get_collision_point()
 		_normal_draw = _raycast_3d.get_collision_normal()
 		var trans := Transform3D()
@@ -173,7 +167,51 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		_decal_pointer.global_transform = trans
 		_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
 		_decal_pointer.visible = _edit_draw or _edit_erase
+		_mouse_event = EVENT_MOUSE.EVENT_NONE
+	if _time_draw > 0:
+		if not _draw_paused:
+			if Time.get_ticks_msec() - _time_draw >= 150:
+				_time_draw = Time.get_ticks_msec()
+				_eval_brush()
+
+
+func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
+	if _grass_selected == null:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	if _grass_selected.multimesh != null:
+		_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if not (_edit_draw or _edit_erase):
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			if event.pressed:
+				_project_ray_origin = viewport_camera.project_ray_origin(event.position)
+				_project_ray_normal = viewport_camera.project_ray_normal(event.position)
+				_mouse_event = EVENT_MOUSE.EVENT_CLICK
+			else:
+				_time_draw = 0
+				_object_draw = null
+				_mouse_event = EVENT_MOUSE.EVENT_NONE
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+	if event is InputEventMouseMotion:
+		if _mouse_event != EVENT_MOUSE.EVENT_CLICK:
+			_project_ray_origin = viewport_camera.project_ray_origin(event.position)
+			_project_ray_normal = viewport_camera.project_ray_normal(event.position)
+			_mouse_event = EVENT_MOUSE.EVENT_MOVE
 	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+
+func _update_gui():
+	if _grass_selected != null:
+		_gui_toolbar.slider_radius.value = _grass_selected.sgt_radius
+		_gui_toolbar.slider_density.value = _grass_selected.sgt_density
+		_gui_toolbar.edit_scale.value = _grass_selected.sgt_scale
+		_gui_toolbar.edit_rotation.value = _grass_selected.sgt_rotation
+		_gui_toolbar.edit_rotation_rand.value = _grass_selected.sgt_rotation_rand
+		_gui_toolbar.edit_distance.value = _grass_selected.sgt_dist_min
+		_gui_toolbar.chk_normals.button_pressed = _grass_selected.sgt_follow_normal
+		if _grass_selected.multimesh != null:
+			_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)
 
 
 func _on_button_draw_toggled(pressed : bool):
@@ -253,7 +291,7 @@ func _on_set_erase(value : bool):
 	_gui_toolbar.button_erase.button_pressed = _edit_erase
 
 
-func _on_timer_draw_timeout():
+func _eval_brush():
 	if _grass_selected == null:
 		return
 	if _edit_draw:

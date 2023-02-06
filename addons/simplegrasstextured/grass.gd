@@ -184,7 +184,6 @@ func _update_multimesh():
 		var pos_max := pos_min * -1
 		var center := Vector3.ZERO
 		var radius := 0.0
-		var r_index := []
 		for trans in _buffer_add:
 			if pos_min > trans.origin:
 				pos_min = trans.origin
@@ -194,14 +193,13 @@ func _update_multimesh():
 		radius = center.distance_to(pos_min) + 1.0
 		for i in range(multimesh.instance_count):
 			var trans := multimesh.get_instance_transform(i)
-			if trans.origin.distance_to(center) <= radius:
-				r_index.append(i)
-		for i in r_index:
-			var trans := multimesh.get_instance_transform(i)
+			if trans.origin.distance_to(center) > radius:
+				continue
 			for trans_add in _buffer_add:
-				if trans_add.origin.distance_to(trans.origin) <= sgt_dist_min:
-					_buffer_add.erase(trans_add)
-					break
+				if trans_add.origin.distance_to(trans.origin) > sgt_dist_min:
+					continue
+				_buffer_add.erase(trans_add)
+				break
 	multi_new.instance_count = count_prev + _buffer_add.size()
 	for i in range(multimesh.instance_count):
 		multi_new.set_instance_transform(i, multimesh.get_instance_transform(i))

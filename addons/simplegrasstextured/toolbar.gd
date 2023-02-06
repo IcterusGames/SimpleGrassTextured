@@ -39,9 +39,11 @@ extends HBoxContainer
 @onready var _label_density := $HSliderDensity/Label as Label
 @onready var _tween_radius : Tween = null
 @onready var _tween_density : Tween = null
+var _win_about = load("res://addons/simplegrasstextured/about.tscn").instantiate()
 
 
 func _ready():
+	get_window().call_deferred(StringName("add_child"), _win_about)
 	_on_theme_changed()
 
 
@@ -74,3 +76,9 @@ func _on_theme_changed():
 	$IconRadius.modulate = get_theme_color("font_color", "Label")
 	$IconDensity.modulate = get_theme_color("font_color", "Label")
 	$IconDistance.modulate = get_theme_color("font_color", "Label")
+
+
+func _on_panel_container_gui_input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			_win_about.popup_centered()
