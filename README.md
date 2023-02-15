@@ -34,9 +34,14 @@ Select the SimpleGrassTextured node on your scene and draw on the terrain
 
 ## Optimization
 
-For short grasses in which it is not necessary to have shadows, they can be deactivated through the inspector in the GeometryInstance3D options of the SimpleGrassTextured
+* For short grasses in which it is not necessary to have shadows, they can be deactivated through the inspector in the GeometryInstance3D options of the SimpleGrassTextured
 
 ![Inspector GeometryInstance3D](https://github.com/IcterusGames/SimpleGrassTexturedPreview/raw/main/previews/cast_shadows.png)
+
+* If your custom mesh does not display correctly try adjusting LOD Bias
+
+![Inspector lod 1](https://github.com/IcterusGames/SimpleGrassTexturedPreview/raw/main/previews/lod_bias_1.jpg)
+![Inspector lod 5](https://github.com/IcterusGames/SimpleGrassTexturedPreview/raw/main/previews/lod_bias_5.jpg)
 
 ## Licence
 
