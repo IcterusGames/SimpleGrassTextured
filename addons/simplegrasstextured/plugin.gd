@@ -104,7 +104,7 @@ func _handles(object) -> bool:
 	return false
 
 
-func _edit(object : Variant):
+func _edit(object):
 	_grass_selected = object
 	_update_gui()
 
