@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://bfy4swcp2kwpq"]
+
+[ext_resource type="Script" path="res://addons/simplegrasstextured/toolbar_up.gd" id="1_h2433"]
+[ext_resource type="Texture2D" uid="uid://bsmcpupaj02v8" path="res://addons/simplegrasstextured/sgt_icon.svg" id="3_637xa"]
+[ext_resource type="PackedScene" uid="uid://der2mmxtog2mt" path="res://addons/simplegrasstextured/toolbar_menu.tscn" id="3_suvo1"]
+
+[node name="SGTToolbarUp" type="HBoxContainer"]
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+script = ExtResource("1_h2433")
+
+[node name="MenuButton" parent="." instance=ExtResource("3_suvo1")]
+layout_mode = 2
+text = "SimpleGrassTextured"
+icon = ExtResource("3_637xa")
+switch_on_hover = true

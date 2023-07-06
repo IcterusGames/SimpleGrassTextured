@@ -22,29 +22,59 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @tool
-extends HBoxContainer
+extends Control
+
+const DEFAULT_SCALE := 1.0
+const DEFAULT_ROTATION := 0.0
+const DEFAULT_ROTATION_RAND := 1.0
+const DEFAULT_DISTANCE := 0.25
 
 @onready var button_draw := $ButtonDraw as Button
+@onready var button_fill := $ButtonFill as Button
 @onready var button_erase := $ButtonEraser as Button
 @onready var slider_radius := $HSliderRadius as HSlider
 @onready var slider_density := $HSliderDensity as HSlider
-@onready var edit_scale := $SpinScale as SpinBox
-@onready var edit_rotation := $SpinRotation as SpinBox
-@onready var edit_rotation_rand := $SpinRotationRand as SpinBox
-@onready var edit_distance := $SpinDistanceMin as SpinBox
-@onready var chk_normals := $CheckFollowNormal as CheckBox
+@onready var edit_scale : EditorSpinSlider
+@onready var edit_rotation : EditorSpinSlider
+@onready var edit_rotation_rand : EditorSpinSlider
+@onready var edit_distance : EditorSpinSlider
 @onready var label_stats := $LabelStats as Label
 
+@onready var _win_about = load("res://addons/simplegrasstextured/about.tscn").instantiate()
 @onready var _label_radius := $HSliderRadius/Label as Label
 @onready var _label_density := $HSliderDensity/Label as Label
+@onready var _button_more := $ButtonMore as MenuButton
 @onready var _tween_radius : Tween = null
 @onready var _tween_density : Tween = null
-var _win_about = load("res://addons/simplegrasstextured/about.tscn").instantiate()
 
 
 func _ready():
 	get_window().call_deferred(StringName("add_child"), _win_about)
+	edit_scale = _create_slider("", 0.01, 10.0, 0.01, DEFAULT_SCALE)
+	edit_rotation = _create_slider("", 0.0, 360.0, 0.1, DEFAULT_ROTATION)
+	edit_rotation_rand = _create_slider("", 0.0, 1.0, 0.01, DEFAULT_ROTATION_RAND)
+	edit_distance = _create_slider("", 0.0, 5.0, 0.01, DEFAULT_DISTANCE)
+	%ScaleCont.add_child(edit_scale)
+	%RotationCont.add_child(edit_rotation)
+	%RotationRandCont.add_child(edit_rotation_rand)
+	%DistanceCont.add_child(edit_distance)
 	_on_theme_changed()
+
+
+func set_current_grass(editor_interface : EditorInterface, grass):
+	$ButtonMore.set_current_grass(editor_interface, grass)
+
+
+func _create_slider(label : String, min : float, max : float, step : float, value : float = 0.0) -> EditorSpinSlider:
+	var slider := EditorSpinSlider.new()
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.step = step;
+	slider.min_value = min
+	slider.max_value = max
+	slider.label = label
+	slider.value = value
+	slider.custom_minimum_size.x = 75
+	return slider
 
 
 func _on_h_slider_radius_value_changed(value : float):
@@ -70,15 +100,33 @@ func _on_h_slider_density_value_changed(value):
 
 
 func _on_theme_changed():
-	$IconScale.texture = get_theme_icon("ToolScale", "EditorIcons")
-	$IconRotation.texture = get_theme_icon("ToolRotate", "EditorIcons")
-	$IconRotationRand.texture = get_theme_icon("RandomNumberGenerator", "EditorIcons")
+	%IconScale.icon = get_theme_icon("ToolScale", "EditorIcons")
+	%IconRotation.icon = get_theme_icon("ToolRotate", "EditorIcons")
+	%IconRotationRand.icon = get_theme_icon("RandomNumberGenerator", "EditorIcons")
 	$IconRadius.modulate = get_theme_color("font_color", "Label")
 	$IconDensity.modulate = get_theme_color("font_color", "Label")
-	$IconDistance.modulate = get_theme_color("font_color", "Label")
+	%IconDistance.modulate = get_theme_color("font_color", "Label")
+	if _button_more != null:
+		_button_more.icon = get_theme_icon("GuiTabMenuHl", "EditorIcons")
 
 
 func _on_panel_container_gui_input(event):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			_win_about.popup_centered()
+
+
+func _on_icon_scale_pressed():
+	edit_scale.value = DEFAULT_SCALE
+
+
+func _on_icon_rotation_pressed():
+	edit_rotation.value = DEFAULT_ROTATION
+
+
+func _on_icon_rotation_rand_pressed():
+	edit_rotation_rand.value = DEFAULT_ROTATION_RAND
+
+
+func _on_icon_distance_pressed():
+	edit_distance.value = DEFAULT_DISTANCE

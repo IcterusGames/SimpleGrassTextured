@@ -1,4 +1,4 @@
-# about.gd
+# toolbar_up.gd
 # This file is part of: SimpleGrassTextured
 # Copyright (c) 2023 IcterusGames
 #
@@ -22,13 +22,8 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @tool
-extends AcceptDialog
+extends Control
 
 
-func _ready():
-	name = "SimpleGrassTexturedHelpAbout"
-	get_ok_button().custom_minimum_size.x = 100
-
-
-func _on_rich_text_label_meta_clicked(meta):
-	OS.shell_open(str(meta))
+func set_current_grass(editor_interface : EditorInterface, grass):
+	$MenuButton.set_current_grass(editor_interface, grass)

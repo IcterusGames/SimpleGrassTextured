@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=3 uid="uid://der2mmxtog2mt"]
+
+[ext_resource type="Script" path="res://addons/simplegrasstextured/toolbar_menu.gd" id="1_mmgcy"]
+
+[node name="ToolbarMenu" type="MenuButton"]
+item_count = 10
+popup/item_0/text = "Tools"
+popup/item_0/id = 0
+popup/item_1/text = ""
+popup/item_1/id = -1
+popup/item_1/separator = true
+popup/item_2/text = "Auto center position"
+popup/item_2/id = 1
+popup/item_3/text = "Bake height map"
+popup/item_3/checkable = 1
+popup/item_3/id = 3
+popup/item_4/text = "Cast shadow"
+popup/item_4/checkable = 1
+popup/item_4/id = 2
+popup/item_5/text = "Global parameters"
+popup/item_5/id = 4
+popup/item_6/text = ""
+popup/item_6/id = -1
+popup/item_6/separator = true
+popup/item_7/text = "Clear all"
+popup/item_7/id = 5
+popup/item_8/text = ""
+popup/item_8/id = -1
+popup/item_8/separator = true
+popup/item_9/text = "About SimpleGrassTextured"
+popup/item_9/id = 6
+script = ExtResource("1_mmgcy")

@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://c1242d1bef7lb"]
+
+[ext_resource type="Script" path="res://addons/simplegrasstextured/clear_all_confirmation_dialog.gd" id="1_xk6u2"]
+
+[node name="ClearAllConfirmationDialog" type="ConfirmationDialog"]
+size = Vector2i(377, 109)
+ok_button_text = "Yes"
+dialog_text = "Are you sure you want to remove all the grass?"
+cancel_button_text = "No"
+script = ExtResource("1_xk6u2")

@@ -1,4 +1,4 @@
-# about.gd
+# clear_all_confirmation_dialog.gd
 # This file is part of: SimpleGrassTextured
 # Copyright (c) 2023 IcterusGames
 #
@@ -22,13 +22,10 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @tool
-extends AcceptDialog
+extends ConfirmationDialog
 
 
 func _ready():
-	name = "SimpleGrassTexturedHelpAbout"
 	get_ok_button().custom_minimum_size.x = 100
+	get_cancel_button().custom_minimum_size.x = 100
 
-
-func _on_rich_text_label_meta_clicked(meta):
-	OS.shell_open(str(meta))

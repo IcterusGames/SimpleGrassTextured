@@ -1,0 +1,158 @@
+[gd_scene load_steps=24 format=3 uid="uid://bfq0snth8sj3h"]
+
+[ext_resource type="Script" path="res://addons/simplegrasstextured/singleton.gd" id="1_bos4q"]
+[ext_resource type="Shader" path="res://addons/simplegrasstextured/shaders/distance.gdshader" id="2_x0p7u"]
+[ext_resource type="Shader" path="res://addons/simplegrasstextured/shaders/motion1.gdshader" id="3_amjfl"]
+[ext_resource type="Shader" path="res://addons/simplegrasstextured/shaders/motion2.gdshader" id="4_5b1gv"]
+[ext_resource type="Shader" path="res://addons/simplegrasstextured/shaders/normal.gdshader" id="5_0o4wf"]
+[ext_resource type="Texture2D" uid="uid://cho4etu1eahnx" path="res://addons/simplegrasstextured/images/normal.png" id="5_3dhao"]
+[ext_resource type="Texture2D" uid="uid://m77dlrqfdeef" path="res://addons/simplegrasstextured/images/normal_frame.png" id="6_2jauk"]
+[ext_resource type="Shader" path="res://addons/simplegrasstextured/shaders/blur1.gdshader" id="6_svfs0"]
+[ext_resource type="Shader" path="res://addons/simplegrasstextured/shaders/blur2.gdshader" id="7_u8c2b"]
+[ext_resource type="Texture2D" uid="uid://bovwvrkiruiat" path="res://addons/simplegrasstextured/images/motion_frame.png" id="9_ye44h"]
+[ext_resource type="Texture2D" uid="uid://dk6rqq2wmb45o" path="res://addons/simplegrasstextured/images/motion.png" id="9_yreb8"]
+
+[sub_resource type="World3D" id="World3D_wpi3i"]
+
+[sub_resource type="Environment" id="Environment_ub5wl"]
+background_mode = 1
+background_color = Color(1, 1, 1, 1)
+
+[sub_resource type="Environment" id="Environment_hseyq"]
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_2j2sn"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bhk8n"]
+render_priority = 0
+shader = ExtResource("2_x0p7u")
+shader_parameter/heightmap_texture = SubResource("ViewportTexture_2j2sn")
+
+[sub_resource type="QuadMesh" id="QuadMesh_2vmyu"]
+size = Vector2(50, 50)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_xom4q"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0yrkm"]
+shader = ExtResource("5_0o4wf")
+shader_parameter/depth_texture = SubResource("ViewportTexture_xom4q")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7aqh4"]
+shader = ExtResource("6_svfs0")
+shader_parameter/normal_texture = ExtResource("5_3dhao")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tt7gm"]
+shader = ExtResource("7_u8c2b")
+shader_parameter/normal_frame = ExtResource("6_2jauk")
+shader_parameter/normal_texture = ExtResource("5_3dhao")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bi14c"]
+shader = ExtResource("3_amjfl")
+shader_parameter/delta = 0.00560467
+shader_parameter/prev_depth = ExtResource("9_yreb8")
+shader_parameter/cur_depth = ExtResource("9_yreb8")
+shader_parameter/motion_frame = ExtResource("9_ye44h")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5hmhs"]
+shader = ExtResource("4_5b1gv")
+shader_parameter/prev_depth = ExtResource("9_yreb8")
+
+[node name="SimpleGrassSingleton" type="Node3D"]
+visible = false
+script = ExtResource("1_bos4q")
+
+[node name="HeightMapView" type="SubViewport" parent="."]
+own_world_3d = true
+world_3d = SubResource("World3D_wpi3i")
+size = Vector2i(128, 128)
+render_target_update_mode = 1
+
+[node name="Camera" type="Camera3D" parent="HeightMapView"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 50, 0)
+environment = SubResource("Environment_ub5wl")
+projection = 1
+size = 50.0
+
+[node name="DistanceView" type="SubViewport" parent="."]
+size_2d_override = Vector2i(512, 512)
+render_target_update_mode = 1
+
+[node name="Camera" type="Camera3D" parent="DistanceView"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -25, 0)
+cull_mask = 65536
+environment = SubResource("Environment_hseyq")
+projection = 1
+size = 50.0
+far = 100.0
+
+[node name="Mesh" type="MeshInstance3D" parent="DistanceView/Camera"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
+visible = false
+layers = 65536
+material_override = SubResource("ShaderMaterial_bhk8n")
+cast_shadow = 0
+mesh = SubResource("QuadMesh_2vmyu")
+
+[node name="Normal" type="SubViewport" parent="."]
+disable_3d = true
+size_2d_override = Vector2i(512, 512)
+render_target_update_mode = 1
+
+[node name="NormalRect" type="ColorRect" parent="Normal"]
+material = SubResource("ShaderMaterial_0yrkm")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Blur1" type="SubViewport" parent="."]
+disable_3d = true
+size_2d_override = Vector2i(512, 512)
+render_target_update_mode = 1
+
+[node name="Blur1Rect" type="ColorRect" parent="Blur1"]
+material = SubResource("ShaderMaterial_7aqh4")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Blur2" type="SubViewport" parent="."]
+disable_3d = true
+size_2d_override = Vector2i(512, 512)
+render_target_update_mode = 1
+
+[node name="Blur2Rect" type="ColorRect" parent="Blur2"]
+material = SubResource("ShaderMaterial_tt7gm")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Motion1" type="SubViewport" parent="."]
+disable_3d = true
+size_2d_override = Vector2i(512, 512)
+render_target_update_mode = 1
+
+[node name="Motion1Rect" type="ColorRect" parent="Motion1"]
+material = SubResource("ShaderMaterial_bi14c")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Motion2" type="SubViewport" parent="."]
+disable_3d = true
+size_2d_override = Vector2i(512, 512)
+render_target_update_mode = 1
+
+[node name="Motion2Rect" type="ColorRect" parent="Motion2"]
+material = SubResource("ShaderMaterial_5hmhs")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

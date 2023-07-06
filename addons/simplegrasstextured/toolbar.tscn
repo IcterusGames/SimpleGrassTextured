@@ -1,16 +1,18 @@
-[gd_scene load_steps=10 format=3 uid="uid://dsim5cbhc6kwm"]
+[gd_scene load_steps=14 format=3 uid="uid://dsim5cbhc6kwm"]
 
 [ext_resource type="Script" path="res://addons/simplegrasstextured/toolbar.gd" id="1_aa1o6"]
-[ext_resource type="Texture2D" uid="uid://bsmcpupaj02v8" path="res://addons/simplegrasstextured/icon.svg" id="2_2ni6b"]
-[ext_resource type="Texture2D" uid="uid://clm6vd2es8xm7" path="res://addons/simplegrasstextured/images/icon_radius.svg" id="3_sf2nv"]
-[ext_resource type="Texture2D" uid="uid://tqiak77omdnr" path="res://addons/simplegrasstextured/images/icon_density.svg" id="4_4c5wp"]
-[ext_resource type="Texture2D" uid="uid://d28dlfkm62t6e" path="res://addons/simplegrasstextured/images/icon_distance.svg" id="5_uonyg"]
+[ext_resource type="Material" uid="uid://cl74usvfymgvs" path="res://addons/simplegrasstextured/materials/icon.material" id="2_p7k4b"]
+[ext_resource type="Texture2D" uid="uid://bsmcpupaj02v8" path="res://addons/simplegrasstextured/sgt_icon.svg" id="3_tl64l"]
+[ext_resource type="PackedScene" uid="uid://der2mmxtog2mt" path="res://addons/simplegrasstextured/toolbar_menu.tscn" id="4_1u4kn"]
+[ext_resource type="Texture2D" uid="uid://clm6vd2es8xm7" path="res://addons/simplegrasstextured/images/sgt_icon_radius.svg" id="5_55kgh"]
+[ext_resource type="Texture2D" uid="uid://tqiak77omdnr" path="res://addons/simplegrasstextured/images/sgt_icon_density.svg" id="6_wboky"]
+[ext_resource type="Texture2D" uid="uid://d28dlfkm62t6e" path="res://addons/simplegrasstextured/images/sgt_icon_distance.svg" id="7_ao3h0"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6mh15"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hc7jq"]
 
-[sub_resource type="Image" id="Image_u88hp"]
+[sub_resource type="Image" id="Image_5ie3k"]
 data = {
 "data": PackedByteArray(255, 255, 255, 0, 255, 255, 255, 0, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 231, 255, 93, 93, 55, 255, 97, 97, 58, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 231, 255, 94, 94, 54, 255, 94, 94, 57, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 93, 93, 41, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 97, 97, 42, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 98, 98, 47, 255, 97, 97, 42, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 235, 255, 93, 93, 233, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 94, 94, 46, 255, 93, 93, 236, 255, 93, 93, 233, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0),
 "format": "RGBA8",
@@ -19,10 +21,22 @@ data = {
 "width": 16
 }
 
-[sub_resource type="ImageTexture" id="ImageTexture_2mqk8"]
-image = SubResource("Image_u88hp")
+[sub_resource type="ImageTexture" id="ImageTexture_cjkxp"]
+image = SubResource("Image_5ie3k")
 
-[node name="Control" type="HBoxContainer"]
+[sub_resource type="Image" id="Image_8vh3k"]
+data = {
+"data": PackedByteArray(255, 255, 255, 0, 255, 255, 255, 0, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 231, 255, 93, 93, 55, 255, 97, 97, 58, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 231, 255, 94, 94, 54, 255, 94, 94, 57, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 93, 93, 41, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 97, 97, 42, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 98, 98, 47, 255, 97, 97, 42, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 235, 255, 93, 93, 233, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 94, 94, 46, 255, 93, 93, 236, 255, 93, 93, 233, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0),
+"format": "RGBA8",
+"height": 16,
+"mipmaps": false,
+"width": 16
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_y38dq"]
+image = SubResource("Image_8vh3k")
+
+[node name="SGTToolbar" type="HFlowContainer"]
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 31.0
@@ -51,10 +65,11 @@ mouse_filter = 2
 theme_override_constants/margin_bottom = 3
 
 [node name="TextureRect" type="TextureRect" parent="PanelContainer/VBoxContainer/MarginContainer"]
+material = ExtResource("2_p7k4b")
 custom_minimum_size = Vector2(24, 0)
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("2_2ni6b")
+texture = ExtResource("3_tl64l")
 stretch_mode = 3
 
 [node name="Label" type="Label" parent="PanelContainer"]
@@ -65,7 +80,7 @@ auto_translate = false
 localize_numeral_system = false
 theme_override_font_sizes/font_size = 7
 theme_override_styles/normal = SubResource("StyleBoxEmpty_hc7jq")
-text = "1.0.5"
+text = "2.0.0"
 horizontal_alignment = 1
 vertical_alignment = 2
 
@@ -75,11 +90,46 @@ toggle_mode = true
 text = "Draw"
 flat = true
 
+[node name="ButtonFill" type="Button" parent="."]
+layout_mode = 2
+toggle_mode = true
+text = "Fill"
+flat = true
+
 [node name="ButtonEraser" type="Button" parent="."]
 layout_mode = 2
 toggle_mode = true
 text = "Erase"
 flat = true
+
+[node name="ButtonMore" parent="." instance=ExtResource("4_1u4kn")]
+layout_mode = 2
+icon = SubResource("ImageTexture_cjkxp")
+switch_on_hover = true
+
+[node name="ButtonMore2" type="MenuButton" parent="."]
+visible = false
+layout_mode = 2
+icon = SubResource("ImageTexture_y38dq")
+switch_on_hover = true
+item_count = 7
+popup/item_0/text = "Tools"
+popup/item_0/id = 0
+popup/item_1/text = ""
+popup/item_1/id = -1
+popup/item_1/separator = true
+popup/item_2/text = "Auto center position"
+popup/item_2/id = 1
+popup/item_3/text = "Cast shadow"
+popup/item_3/checkable = 1
+popup/item_3/id = 2
+popup/item_4/text = "Global parameters"
+popup/item_4/id = 3
+popup/item_5/text = ""
+popup/item_5/id = -1
+popup/item_5/separator = true
+popup/item_6/text = "Clear all"
+popup/item_6/id = 4
 
 [node name="VSeparator2" type="VSeparator" parent="."]
 layout_mode = 2
@@ -87,7 +137,7 @@ layout_mode = 2
 [node name="IconRadius" type="TextureRect" parent="."]
 texture_filter = 1
 layout_mode = 2
-texture = ExtResource("3_sf2nv")
+texture = ExtResource("5_55kgh")
 stretch_mode = 3
 
 [node name="HSliderRadius" type="HSlider" parent="."]
@@ -119,7 +169,7 @@ layout_mode = 2
 [node name="IconDensity" type="TextureRect" parent="."]
 texture_filter = 1
 layout_mode = 2
-texture = ExtResource("4_4c5wp")
+texture = ExtResource("6_wboky")
 stretch_mode = 3
 
 [node name="HSliderDensity" type="HSlider" parent="."]
@@ -147,79 +197,65 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
-[node name="IconScale" type="TextureRect" parent="."]
+[node name="ScaleCont" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="IconScale" type="Button" parent="ScaleCont"]
+unique_name_in_owner = true
 texture_filter = 1
 layout_mode = 2
-texture = SubResource("ImageTexture_2mqk8")
-stretch_mode = 3
-
-[node name="SpinScale" type="SpinBox" parent="."]
-layout_mode = 2
-size_flags_vertical = 4
 tooltip_text = "Scale"
-min_value = 0.01
-step = 0.01
-value = 1.0
-select_all_on_focus = true
+icon = SubResource("ImageTexture_cjkxp")
+flat = true
 
 [node name="Separator3" type="Control" parent="."]
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
-[node name="IconRotation" type="TextureRect" parent="."]
+[node name="RotationCont" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="IconRotation" type="Button" parent="RotationCont"]
+unique_name_in_owner = true
 texture_filter = 1
 layout_mode = 2
-texture = SubResource("ImageTexture_2mqk8")
-stretch_mode = 3
-
-[node name="SpinRotation" type="SpinBox" parent="."]
-layout_mode = 2
-size_flags_vertical = 4
 tooltip_text = "Rotation"
-max_value = 360.0
-step = 0.1
-select_all_on_focus = true
+icon = SubResource("ImageTexture_cjkxp")
+flat = true
 
-[node name="IconRotationRand" type="TextureRect" parent="."]
+[node name="RotationRandCont" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="IconRotationRand" type="Button" parent="RotationRandCont"]
+unique_name_in_owner = true
 texture_filter = 1
 layout_mode = 2
-texture = SubResource("ImageTexture_2mqk8")
-stretch_mode = 3
-
-[node name="SpinRotationRand" type="SpinBox" parent="."]
-layout_mode = 2
-size_flags_vertical = 4
 tooltip_text = "Rotation randomizer"
-max_value = 1.0
-step = 0.01
-value = 1.0
-select_all_on_focus = true
+icon = SubResource("ImageTexture_cjkxp")
+flat = true
 
 [node name="Separator4" type="Control" parent="."]
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
-[node name="IconDistance" type="TextureRect" parent="."]
+[node name="DistanceCont" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="IconDistance" type="Button" parent="DistanceCont"]
+unique_name_in_owner = true
 texture_filter = 1
 layout_mode = 2
-texture = ExtResource("5_uonyg")
-stretch_mode = 3
-
-[node name="SpinDistanceMin" type="SpinBox" parent="."]
-layout_mode = 2
-size_flags_vertical = 4
 tooltip_text = "Minimum distance between grasses"
-step = 0.01
-select_all_on_focus = true
+icon = ExtResource("7_ao3h0")
+flat = true
 
 [node name="Separator5" type="Control" parent="."]
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
-
-[node name="CheckFollowNormal" type="CheckBox" parent="."]
-layout_mode = 2
-button_pressed = true
-text = "Follow normal"
 
 [node name="LabelStats" type="Label" parent="."]
 layout_mode = 2
@@ -232,3 +268,7 @@ vertical_alignment = 1
 [connection signal="gui_input" from="PanelContainer" to="." method="_on_panel_container_gui_input"]
 [connection signal="value_changed" from="HSliderRadius" to="." method="_on_h_slider_radius_value_changed"]
 [connection signal="value_changed" from="HSliderDensity" to="." method="_on_h_slider_density_value_changed"]
+[connection signal="pressed" from="ScaleCont/IconScale" to="." method="_on_icon_scale_pressed"]
+[connection signal="pressed" from="RotationCont/IconRotation" to="." method="_on_icon_rotation_pressed"]
+[connection signal="pressed" from="RotationRandCont/IconRotationRand" to="." method="_on_icon_rotation_rand_pressed"]
+[connection signal="pressed" from="DistanceCont/IconDistance" to="." method="_on_icon_distance_pressed"]
