@@ -52,6 +52,8 @@ Select the SimpleGrassTextured node on your scene and draw on the terrain
    > Note: this same procedure can be done for each character or object that must interact with SimpleGrassTextured
 4. In the active camera disable display layer 17 so that objects that are only interactable with SimpleGrassTexture are not visible
    - ![Preview camera cull mask](https://github.com/IcterusGames/SimpleGrassTexturedPreview/raw/main/previews/sgt2_camera_cull_mask.png)
+5. In your character's _process or _physics_process function update SimpleGrassTextured by calling SimpleGrass.set_player_position(global_position)
+   - ![Preview code character position](https://github.com/IcterusGames/SimpleGrassTexturedPreview/raw/main/previews/sgt2_character_position.png)
 
 ### How to use a custom mesh
 
