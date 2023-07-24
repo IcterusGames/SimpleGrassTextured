@@ -244,7 +244,7 @@ func erase(pos : Vector3, radius : float):
 		baked_height_map = null
 
 
-func auto_center_position(editor_interface : EditorInterface):
+func auto_center_position(editor_interface):
 	var aabb : AABB = multimesh.get_aabb()
 	var center : Vector3 = global_position + aabb.position + (aabb.size / 2)
 	var align : Vector3 = global_position - center
@@ -449,7 +449,7 @@ func _local_height_map_to_global(img : Image) -> Image:
 	return result
 
 
-func bake_height_map(editor_interface : EditorInterface):
+func bake_height_map(editor_interface):
 	if not Engine.is_editor_hint():
 		return null
 	await get_tree().process_frame
@@ -459,7 +459,7 @@ func bake_height_map(editor_interface : EditorInterface):
 	baked_height_map = img
 
 
-func clear_all(editor_interface : EditorInterface = null):
+func clear_all(editor_interface = null):
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	if Engine.is_editor_hint() and baked_height_map != null:
