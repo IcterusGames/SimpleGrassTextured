@@ -43,11 +43,12 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_hnw4u")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_lwftf")
 bbcode_enabled = true
 text = "Simple Grass Textured Plugin
-v. 2.0.1
+v. 2.0.2
 by IcterusGames
 [font_size=7] [/font_size]
 [b]Support me on:[/b]
 [indent][url]https://icterusgames.itch.io/[/url][/indent]
+[indent][url]https://www.patreon.com/IcterusGames[/url][/indent]
 [font_size=7] [/font_size]
 [b]Source code on:[/b]
 [indent][url]https://github.com/IcterusGames/SimpleGrassTextured[/url][/indent]

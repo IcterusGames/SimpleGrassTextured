@@ -131,8 +131,14 @@ func _ready():
 			multimesh.mesh = mesh
 		else:
 			multimesh.mesh = _default_mesh
+	if light_mode == 2:
+		_material = load("res://addons/simplegrasstextured/materials/grass_unshaded.material").duplicate() as ShaderMaterial
 	for isur in range(multimesh.mesh.get_surface_count()):
 		multimesh.mesh.surface_set_material(isur, _material)
+	update_all_material()
+
+
+func update_all_material():
 	_on_set_texture_albedo(texture_albedo)
 	_on_set_alpha_scissor_threshold(alpha_scissor_threshold)
 	_on_set_light_mode(light_mode)
@@ -242,6 +248,8 @@ func erase(pos : Vector3, radius : float):
 			multimesh.mesh.surface_set_material(isur, _material)
 	if Engine.is_editor_hint():
 		baked_height_map = null
+		custom_aabb.position = Vector3.ZERO
+		custom_aabb.end = Vector3.ZERO
 
 
 func auto_center_position(editor_interface):
@@ -266,11 +274,32 @@ func auto_center_position(editor_interface):
 	if _material != null:
 		for isur in range(multimesh.mesh.get_surface_count()):
 			multimesh.mesh.surface_set_material(isur, _material)
-	if Engine.is_editor_hint() and baked_height_map != null:
-		baked_height_map = null
-		bake_height_map(editor_interface)
+	if Engine.is_editor_hint():
+		if baked_height_map != null:
+			baked_height_map = null
+			bake_height_map(editor_interface)
+		custom_aabb.position = Vector3.ZERO
+		custom_aabb.end = Vector3.ZERO
 	else:
 		baked_height_map = null
+
+
+func recalculate_custom_aabb():
+	var start := Vector3.ONE * 0x7FFFFFFF
+	var end := start * -1
+	var mesh_end := multimesh.mesh.get_aabb().end * Vector3(scale_w, scale_h, scale_w)
+	for i in range(multimesh.instance_count):
+		var trans := multimesh.get_instance_transform(i)
+		var point : Vector3 = trans * mesh_end
+		if point.x < start.x: start.x = point.x
+		if point.y < start.y: start.y = point.y
+		if point.z < start.z: start.z = point.z
+		point = trans * mesh_end
+		if point.x > end.x: end.x = point.x
+		if point.y > end.y: end.y = point.y
+		if point.z > end.z: end.z = point.z
+	custom_aabb.position = start
+	custom_aabb.end = end
 
 
 func _update_multimesh():
@@ -321,12 +350,15 @@ func _update_multimesh():
 	temp_dist_min = 0
 	if Engine.is_editor_hint():
 		baked_height_map = null
+		custom_aabb.position = Vector3.ZERO
+		custom_aabb.end = Vector3.ZERO
 
 
 func _build_default_mesh() -> Mesh:
 	var array_mesh := ArrayMesh.new()
 	var vertices := PackedVector3Array()
 	var normals := PackedVector3Array()
+	var tangents := PackedFloat32Array()
 	var colors := PackedColorArray()
 	var uvs := PackedVector2Array()
 	var index := PackedInt32Array()
@@ -347,6 +379,16 @@ func _build_default_mesh() -> Mesh:
 	normals.push_back(Vector3(-1, 0, 0))
 	normals.push_back(Vector3(-1, 0, 0))
 	normals.push_back(Vector3(-1, 0, 0))
+	for i in range(4):
+		tangents.push_back(1)
+		tangents.push_back(0)
+		tangents.push_back(0)
+		tangents.push_back(1)
+	for i in range(4):
+		tangents.push_back(0)
+		tangents.push_back(0)
+		tangents.push_back(1)
+		tangents.push_back(1)
 	uvs.push_back(Vector2(0, 0))
 	uvs.push_back(Vector2(1, 1))
 	uvs.push_back(Vector2(0, 1))
@@ -380,6 +422,7 @@ func _build_default_mesh() -> Mesh:
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[ArrayMesh.ARRAY_NORMAL] = normals
+	arrays[ArrayMesh.ARRAY_TANGENT] = tangents
 	arrays[ArrayMesh.ARRAY_TEX_UV] = uvs
 	arrays[ArrayMesh.ARRAY_COLOR] = colors
 	arrays[ArrayMesh.ARRAY_INDEX] = index
@@ -462,9 +505,12 @@ func bake_height_map(editor_interface):
 func clear_all(editor_interface = null):
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	if Engine.is_editor_hint() and baked_height_map != null:
-		baked_height_map = null
-		bake_height_map(editor_interface)
+	if Engine.is_editor_hint():
+		if baked_height_map != null:
+			baked_height_map = null
+			bake_height_map(editor_interface)
+		custom_aabb.position = Vector3.ZERO
+		custom_aabb.end = Vector3.ZERO
 
 
 func _update_height_map():
@@ -536,8 +582,23 @@ func _on_set_texture_frames(value : Vector2i):
 
 func _on_set_light_mode(value : int):
 	light_mode = value
+	if _material == null:
+		return
+	if light_mode == 2:
+		if _material.get_shader().resource_path != "res://addons/simplegrasstextured/shaders/grass_unshaded.gdshader":
+			_material = load("res://addons/simplegrasstextured/materials/grass_unshaded.material").duplicate() as ShaderMaterial
+			update_all_material()
+			return
+	else:
+		if _material.get_shader().resource_path != "res://addons/simplegrasstextured/shaders/grass.gdshader":
+			_material = load("res://addons/simplegrasstextured/materials/grass.material").duplicate() as ShaderMaterial
+			update_all_material()
+			return
 	if _material != null:
 		_material.set_shader_parameter("light_mode", light_mode)
+		if multimesh.mesh != null:
+			for isur in range(multimesh.mesh.get_surface_count()):
+				multimesh.mesh.surface_set_material(isur, _material)
 
 
 func _on_set_texture_normal(value : Texture):

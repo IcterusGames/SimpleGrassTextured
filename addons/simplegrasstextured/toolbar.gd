@@ -65,6 +65,10 @@ func set_current_grass(editor_interface : EditorInterface, grass):
 	$ButtonMore.set_current_grass(editor_interface, grass)
 
 
+func show_about():
+	_win_about.popup_centered()
+
+
 func _create_slider(label : String, min : float, max : float, step : float, value : float = 0.0) -> EditorSpinSlider:
 	var slider := EditorSpinSlider.new()
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL

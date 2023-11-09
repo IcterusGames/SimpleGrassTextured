@@ -32,6 +32,7 @@ enum MENU_ID {
 	GLOBAL_PARAMETERS,
 	CLEAR_ALL,
 	HELP_ABOUT,
+	RECALCULATE_AABB,
 }
 
 var _global_parameters = load("res://addons/simplegrasstextured/global_parameters.tscn").instantiate()
@@ -54,6 +55,7 @@ func _ready():
 	popup.add_submenu_item("Tools", "ToolsMenu")
 	popup.add_separator()
 	popup.add_item("Auto center position", MENU_ID.AUTO_CENTER_POSITION)
+	popup.add_item("Recalculate custom AABB", MENU_ID.RECALCULATE_AABB)
 	popup.add_check_item("Bake height map", MENU_ID.BAKE_HEIGHT_MAP)
 	popup.add_check_item("Cast shadow", MENU_ID.CAST_SHADOW)
 	popup.add_item("Global parameters", MENU_ID.GLOBAL_PARAMETERS)
@@ -86,6 +88,8 @@ func _on_sgt_menu_button(id : int):
 	match id:
 		MENU_ID.AUTO_CENTER_POSITION:
 			_grass_selected.auto_center_position(_editor_interface)
+		MENU_ID.RECALCULATE_AABB:
+			_grass_selected.recalculate_custom_aabb()
 		MENU_ID.CAST_SHADOW:
 			if _grass_selected.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF:
 				_grass_selected.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON

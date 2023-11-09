@@ -53,6 +53,7 @@ var _draw_paused := true
 var _mouse_event := EVENT_MOUSE.EVENT_NONE
 var _project_ray_origin := Vector3.INF
 var _project_ray_normal := Vector3.INF
+var _inspector_plugin : EditorInspectorPlugin = null
 
 
 func _enter_tree():
@@ -71,7 +72,11 @@ func _enter_tree():
 	_gui_toolbar_up = load("res://addons/simplegrasstextured/toolbar_up.tscn").instantiate()
 	_gui_toolbar_up.visible = false
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, _gui_toolbar_up)
+	_inspector_plugin = load("res://addons/simplegrasstextured/sgt_inspector.gd").new()
+	_inspector_plugin.about_pressed.connect(_on_about_pressed)
+	add_inspector_plugin(_inspector_plugin)
 	_raycast_3d = RayCast3D.new()
+	_raycast_3d.collision_mask = pow(2, 32) - 1
 	_raycast_3d.visible = false
 	_decal_pointer = Decal.new()
 	_decal_pointer.set_texture(Decal.TEXTURE_ALBEDO, load("res://addons/simplegrasstextured/images/pointer.png"))
@@ -100,6 +105,8 @@ func _exit_tree():
 	_gui_toolbar.queue_free()
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, _gui_toolbar_up)
 	_gui_toolbar_up.queue_free()
+	if _inspector_plugin != null:
+		remove_inspector_plugin(_inspector_plugin)
 
 
 func _enable_plugin():
@@ -424,6 +431,10 @@ func _on_set_erase(value : bool):
 		_decal_pointer.modulate = Color.RED
 		_gui_toolbar.slider_density.editable = false
 	_gui_toolbar.button_erase.button_pressed = _edit_erase
+
+
+func _on_about_pressed():
+	_gui_toolbar.show_about()
 
 
 func _eval_brush():
