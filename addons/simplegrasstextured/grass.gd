@@ -121,8 +121,16 @@ func _ready():
 				multimesh.mesh = mesh
 			else:
 				multimesh.mesh = _default_mesh
-	#else:
-	#	set_meta("SimpleGrassTextured", "2.0.0")
+	else:
+		if get_meta("SimpleGrassTextured") == "1.0.2":
+			# New default mesh update tangents
+			set_meta("SimpleGrassTextured", "2.0.3")
+			_force_update_multimesh = true
+			if multimesh != null:
+				if mesh != null:
+					multimesh.mesh = mesh
+				else:
+					multimesh.mesh = _default_mesh
 	if multimesh == null:
 		multimesh = MultiMesh.new()
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
@@ -139,6 +147,7 @@ func _ready():
 
 
 func update_all_material():
+	_on_set_albedo(albedo)
 	_on_set_texture_albedo(texture_albedo)
 	_on_set_alpha_scissor_threshold(alpha_scissor_threshold)
 	_on_set_light_mode(light_mode)
