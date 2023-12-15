@@ -14,6 +14,17 @@ size = Vector2i(520, 240)
 min_size = Vector2i(520, 200)
 max_size = Vector2i(1280, 720)
 script = ExtResource("1_r23hh")
+message = "Simple Grass Textured Plugin
+v. {_version_num}
+by IcterusGames
+[font_size=7] [/font_size]
+[b]Support me on:[/b]
+[indent][url]https://icterusgames.itch.io/[/url][/indent]
+[indent][url]https://www.patreon.com/IcterusGames[/url][/indent]
+[font_size=7] [/font_size]
+[b]Source code on:[/b]
+[indent][url]https://github.com/IcterusGames/SimpleGrassTextured[/url][/indent]
+"
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 offset_left = 8.0
@@ -37,13 +48,14 @@ texture = ExtResource("3_7w1su")
 stretch_mode = 4
 
 [node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/focus = SubResource("StyleBoxEmpty_hnw4u")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_lwftf")
 bbcode_enabled = true
 text = "Simple Grass Textured Plugin
-v. 2.0.3
+v. 2.0.4
 by IcterusGames
 [font_size=7] [/font_size]
 [b]Support me on:[/b]

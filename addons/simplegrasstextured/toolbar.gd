@@ -58,6 +58,9 @@ func _ready():
 	%RotationCont.add_child(edit_rotation)
 	%RotationRandCont.add_child(edit_rotation_rand)
 	%DistanceCont.add_child(edit_distance)
+	var config := ConfigFile.new()
+	config.load("res://addons/simplegrasstextured/plugin.cfg")
+	%LabelVersion.text = config.get_value("plugin", "version")
 	_on_theme_changed()
 
 
