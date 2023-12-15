@@ -65,6 +65,8 @@ varying vec2 uv_align;
 varying vec2 uv_scale;
 varying flat vec3 v_normal_grass;
 
+const highp float EPSILON = 0.0001;
+
 
 float get_value(sampler2D tex, vec2 uv) {
 	vec4 color = textureLod(tex, uv, 0);
@@ -73,9 +75,22 @@ float get_value(sampler2D tex, vec2 uv) {
 }
 
 
+float wrap(float value, float min, float max) {
+	float range = max - min;
+	if (range < EPSILON) {
+		return min;
+	}
+	float result = value - (range * floor((value - min) / range));
+	if (result >= max - EPSILON && result <= max + EPSILON) {
+		return min;
+	}
+	return result;
+}
+
+
 void vertex() {
 	float lev = pow(abs((VERTEX.y - NODE_POSITION_WORLD.y) / grass_size_y), 1.7 + sgt_wind_strength);
-	float rand = dot(NODE_POSITION_WORLD, NODE_POSITION_WORLD * 10.0);
+	float rand = wrap(dot(NODE_POSITION_WORLD, NODE_POSITION_WORLD * 10.0), 0.0, 256.0);
 	float randf = fract(rand);
 	int randi = int(randf * 10.0);
 	
@@ -94,8 +109,7 @@ void vertex() {
 	VERTEX.z += sgt_wind_direction.z * lev * (sgt_wind_strength + (sin(TIME + rand) * 0.2 * (1.0 - grass_strength) * min(1.0, sgt_wind_turbulence))) * (1.0 - grass_strength);
 	
 	vec3 align = VERTEX - NODE_POSITION_WORLD;
-	float varh = ((float(randi % 5) / 5.0) * scale_var);
-	float varw = ((float(randi % 5) / 5.0) * scale_var);
+	float scale_rand = ((float(randi % 5) / 5.0) * scale_var);
 	float dist = 1.0;
 	if(optimization_by_distance) {
 		float node_dist = distance(NODE_POSITION_WORLD, CAMERA_POSITION_WORLD);
@@ -103,9 +117,8 @@ void vertex() {
 		dist *= smoothstep(optimization_dist_max, optimization_dist_min, node_dist);
 	}
 	
-	VERTEX.y = (align.y * ((varh * scale_h + scale_h) * dist) + NODE_POSITION_WORLD.y);
-	VERTEX.x = (align.x * ((scale_w - varw) * dist) + NODE_POSITION_WORLD.x);
-	VERTEX.z = (align.z * ((scale_w - varw) * dist) + NODE_POSITION_WORLD.z);
+	vec3 scale = vec3(scale_w, scale_h, scale_w) * (1.0 + scale_rand);
+	VERTEX = NODE_POSITION_WORLD + (align * dist * scale);
 	
 	if(dist > 0.0 && interactive_mode) {
 		float node_x = NODE_POSITION_WORLD.x / 50.0;

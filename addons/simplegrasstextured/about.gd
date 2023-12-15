@@ -24,8 +24,13 @@
 @tool
 extends AcceptDialog
 
+@export_multiline var message := ""
+
 
 func _ready():
+	var config := ConfigFile.new()
+	config.load("res://addons/simplegrasstextured/plugin.cfg")
+	%RichTextLabel.text = message.format({"_version_num":config.get_value("plugin", "version")})
 	name = "SimpleGrassTexturedHelpAbout"
 	get_ok_button().custom_minimum_size.x = 100
 
