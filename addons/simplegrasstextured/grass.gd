@@ -77,7 +77,7 @@ var wind_strength := 0.15 : set = _on_set_wind_strength
 var wind_turbulence := 1.0 : set = _on_set_wind_turbulence
 var wind_pattern : Texture = null : set = _on_set_wind_pattern
 
-var _default_mesh : Mesh = load("res://addons/simplegrasstextured/default_mesh.tres")
+var _default_mesh : Mesh = load("res://addons/simplegrasstextured/default_mesh.tres").duplicate()
 var _buffer_add : Array[Transform3D] = []
 var _material := load("res://addons/simplegrasstextured/materials/grass.material").duplicate() as ShaderMaterial
 var _force_update_multimesh := false
