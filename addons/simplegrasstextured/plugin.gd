@@ -183,6 +183,7 @@ func _physics_process(_delta):
 		_raycast_3d.global_transform.origin = _project_ray_origin
 		_raycast_3d.global_transform.basis.y = _project_ray_normal
 		_raycast_3d.target_position = Vector3(0, 100000, 0)
+		_raycast_3d.collision_mask = _grass_selected.collision_mask
 		_raycast_3d.force_raycast_update()
 		if _raycast_3d.is_colliding():
 			_position_draw = _raycast_3d.get_collision_point()
@@ -200,6 +201,7 @@ func _physics_process(_delta):
 		_raycast_3d.global_transform.origin = _project_ray_origin
 		_raycast_3d.global_transform.basis.y = _project_ray_normal
 		_raycast_3d.target_position = Vector3(0, 100000, 0)
+		_raycast_3d.collision_mask = _grass_selected.collision_mask
 		_raycast_3d.force_raycast_update()
 		if ( not _raycast_3d.is_colliding()
 		or ( _object_draw != null and _raycast_3d.get_collider() != _object_draw )):
@@ -338,6 +340,7 @@ func _update_gui():
 		_gui_toolbar_up.set_current_grass(get_editor_interface(), _grass_selected)
 		if _grass_selected.multimesh != null:
 			_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)
+		_raycast_3d.collision_mask = _grass_selected.collision_mask
 
 
 func _on_button_draw_toggled(pressed : bool):
@@ -458,6 +461,7 @@ func _eval_brush():
 				_raycast_3d.global_transform.basis.z = Vector3.BACK
 				_raycast_3d.global_transform.origin = _position_draw + _normal_draw + variation
 				_raycast_3d.target_position = Vector3(0, DEPTH_BRUSH, 0)
+				_raycast_3d.collision_mask = _grass_selected.collision_mask
 				_raycast_3d.force_raycast_update()
 				var pos_grass : Vector3 = _raycast_3d.get_collision_point()
 				if _position_draw.distance_to(pos_grass) >= _edit_radius:
@@ -487,6 +491,7 @@ func _eval_brush():
 			_raycast_3d.global_transform.basis.z = Vector3.BACK
 			_raycast_3d.global_transform.origin = _position_draw + _normal_draw + variation
 			_raycast_3d.target_position = Vector3(0, DEPTH_BRUSH, 0)
+			_raycast_3d.collision_mask = _grass_selected.collision_mask
 			_raycast_3d.force_raycast_update()
 			if _raycast_3d.is_colliding() and _raycast_3d.get_collider() == _object_draw:
 				var normal := Vector3.UP
