@@ -58,6 +58,8 @@ extends MultiMeshInstance3D
 @export var optimization_dist_max := 50.0 : set = _on_set_optimization_dist_max
 @export_group("Height Map Data")
 @export var baked_height_map : Image = null
+@export_group("Collision")
+@export_flags_3d_physics var collision_mask: int = 1
 
 var sgt_radius := 2.0
 var sgt_density := 25
