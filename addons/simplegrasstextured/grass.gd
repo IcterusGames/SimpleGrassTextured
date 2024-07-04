@@ -77,7 +77,7 @@ var wind_strength := 0.15 : set = _on_set_wind_strength
 var wind_turbulence := 1.0 : set = _on_set_wind_turbulence
 var wind_pattern : Texture = null : set = _on_set_wind_pattern
 
-var _default_mesh : Mesh = null
+var _default_mesh : Mesh = load("res://addons/simplegrasstextured/default_mesh.tres").duplicate()
 var _buffer_add : Array[Transform3D] = []
 var _material := load("res://addons/simplegrasstextured/materials/grass.material").duplicate() as ShaderMaterial
 var _force_update_multimesh := false
@@ -94,7 +94,6 @@ var _wrng_deprec_windpatt = true
 
 
 func _init():
-	_default_mesh = _build_default_mesh()
 	if Engine.is_editor_hint():
 		for var_i in get_property_list():
 			if not var_i.name.begins_with("sgt_"):
@@ -361,83 +360,6 @@ func _update_multimesh():
 		baked_height_map = null
 		custom_aabb.position = Vector3.ZERO
 		custom_aabb.end = Vector3.ZERO
-
-
-func _build_default_mesh() -> Mesh:
-	var array_mesh := ArrayMesh.new()
-	var vertices := PackedVector3Array()
-	var normals := PackedVector3Array()
-	var tangents := PackedFloat32Array()
-	var colors := PackedColorArray()
-	var uvs := PackedVector2Array()
-	var index := PackedInt32Array()
-	
-	vertices.push_back(Vector3(-0.5, 1, 0))
-	vertices.push_back(Vector3(0.5, 0, 0))
-	vertices.push_back(Vector3(-0.5, 0, 0))
-	vertices.push_back(Vector3(0.5, 1, 0))
-	vertices.push_back(Vector3(0, 1, -0.5))
-	vertices.push_back(Vector3(0, 0, 0.5))
-	vertices.push_back(Vector3(0, 0, -0.5))
-	vertices.push_back(Vector3(0, 1, 0.5))
-	normals.push_back(Vector3(0, 0, 1))
-	normals.push_back(Vector3(0, 0, 1))
-	normals.push_back(Vector3(0, 0, 1))
-	normals.push_back(Vector3(0, 0, 1))
-	normals.push_back(Vector3(-1, 0, 0))
-	normals.push_back(Vector3(-1, 0, 0))
-	normals.push_back(Vector3(-1, 0, 0))
-	normals.push_back(Vector3(-1, 0, 0))
-	for i in range(4):
-		tangents.push_back(1)
-		tangents.push_back(0)
-		tangents.push_back(0)
-		tangents.push_back(1)
-	for i in range(4):
-		tangents.push_back(0)
-		tangents.push_back(0)
-		tangents.push_back(1)
-		tangents.push_back(1)
-	uvs.push_back(Vector2(0, 0))
-	uvs.push_back(Vector2(1, 1))
-	uvs.push_back(Vector2(0, 1))
-	uvs.push_back(Vector2(1, 0))
-	uvs.push_back(Vector2(0, 0))
-	uvs.push_back(Vector2(1, 1))
-	uvs.push_back(Vector2(0, 1))
-	uvs.push_back(Vector2(1, 0))
-	colors.push_back(Color(1, 0, 0))
-	colors.push_back(Color(0, 0, 0))
-	colors.push_back(Color(0, 0, 0))
-	colors.push_back(Color(1, 0, 0))
-	colors.push_back(Color(1, 0, 0))
-	colors.push_back(Color(0, 0, 0))
-	colors.push_back(Color(0, 0, 0))
-	colors.push_back(Color(1, 0, 0))
-	index.push_back(0)
-	index.push_back(1)
-	index.push_back(2)
-	index.push_back(3)
-	index.push_back(1)
-	index.push_back(0)
-	index.push_back(4)
-	index.push_back(5)
-	index.push_back(6)
-	index.push_back(7)
-	index.push_back(5)
-	index.push_back(4)
-	
-	var arrays := []
-	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = vertices
-	arrays[ArrayMesh.ARRAY_NORMAL] = normals
-	arrays[ArrayMesh.ARRAY_TANGENT] = tangents
-	arrays[ArrayMesh.ARRAY_TEX_UV] = uvs
-	arrays[ArrayMesh.ARRAY_COLOR] = colors
-	arrays[ArrayMesh.ARRAY_INDEX] = index
-	
-	array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	return array_mesh
 
 
 func _create_height_map_image(local : bool) -> Image:
