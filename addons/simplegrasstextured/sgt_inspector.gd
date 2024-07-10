@@ -23,8 +23,6 @@
 
 extends EditorInspectorPlugin
 
-signal about_pressed
-
 
 func _can_handle(object: Object) -> bool:
 	if object != null:
@@ -45,11 +43,13 @@ func _parse_category(object: Object, category: String):
 	label.text = "[b]by IcterusGames:[/b]"
 	button.text = "About"
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.pressed.connect(_on_button_about_pressed)
+	button.pressed.connect(_on_button_about_pressed.bind(button))
 	hbox.add_child(label)
 	hbox.add_child(button)
 	add_custom_control(hbox)
 
 
-func _on_button_about_pressed():
-	about_pressed.emit()
+func _on_button_about_pressed(button :Button):
+	var win = load("res://addons/simplegrasstextured/about.tscn").instantiate()
+	button.get_window().add_child(win)
+	win.popup_centered()

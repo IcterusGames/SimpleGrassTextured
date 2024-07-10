@@ -25,7 +25,14 @@
 extends ConfirmationDialog
 
 
-func _ready():
+func _ready() -> void:
 	get_ok_button().custom_minimum_size.x = 100
 	get_cancel_button().custom_minimum_size.x = 100
 
+
+func _on_confirmed() -> void:
+	queue_free()
+
+
+func _on_canceled() -> void:
+	queue_free()

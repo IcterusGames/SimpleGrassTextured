@@ -1,3 +1,4 @@
+# default_mesh_builder.gd
 # This file is part of: SimpleGrassTextured
 # Copyright (c) 2023 IcterusGames
 #
@@ -20,10 +21,9 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-extends Node
-## Builds and saves the default grass mesh when ran.
 
-func _ready():
+## Builds and saves the default grass mesh when called.
+func rebuild_and_save_default_mesh() -> void:
 	var array_mesh := ArrayMesh.new()
 	var vertices := PackedVector3Array()
 	var normals := PackedVector3Array()
@@ -97,4 +97,5 @@ func _ready():
 	arrays[ArrayMesh.ARRAY_INDEX] = index
 	
 	array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	array_mesh.set_meta(&"GodotVersion", Engine.get_version_info()["string"])
 	ResourceSaver.save(array_mesh, "res://addons/simplegrasstextured/default_mesh.tres")

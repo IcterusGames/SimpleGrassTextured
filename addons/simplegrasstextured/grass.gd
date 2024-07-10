@@ -59,7 +59,7 @@ extends MultiMeshInstance3D
 @export_group("Height Map Data")
 @export var baked_height_map : Image = null
 @export_group("Collision")
-@export_flags_3d_physics var collision_mask: int = 1
+@export_flags_3d_physics var collision_mask :int = pow(2, 32) - 1
 
 var sgt_radius := 2.0
 var sgt_density := 25
@@ -97,6 +97,8 @@ var _wrng_deprec_windpatt = true
 
 func _init():
 	if Engine.is_editor_hint():
+		if collision_mask == pow(2, 32) - 1:
+			collision_mask = ProjectSettings.get_setting("SimpleGrassTextured/General/default_terrain_physics_layer", pow(2, 32) -1)
 		for var_i in get_property_list():
 			if not var_i.name.begins_with("sgt_"):
 				continue
@@ -143,7 +145,8 @@ func _ready():
 	if light_mode == 2:
 		_material = load("res://addons/simplegrasstextured/materials/grass_unshaded.material").duplicate() as ShaderMaterial
 	for isur in range(multimesh.mesh.get_surface_count()):
-		multimesh.mesh.surface_set_material(isur, _material)
+		if multimesh.mesh.surface_get_material(isur) == null:
+			multimesh.mesh.surface_set_material(isur, _material)
 	update_all_material()
 
 
@@ -245,6 +248,9 @@ func erase(pos : Vector3, radius : float):
 		multi_new.mesh = mesh
 	else:
 		multi_new.mesh = _default_mesh
+	if multimesh == null:
+		multimesh = MultiMesh.new()
+		multimesh.mesh = mesh if mesh != null else _default_mesh
 	for i in range(multimesh.instance_count):
 		var trans := multimesh.get_instance_transform(i)
 		if trans.origin.distance_to(pos) > radius:
@@ -252,17 +258,26 @@ func erase(pos : Vector3, radius : float):
 	multi_new.instance_count = array.size()
 	for i in range(array.size()):
 		multi_new.set_instance_transform(i, array[i])
-	multimesh = multi_new
+	if Engine.is_editor_hint() and multimesh.resource_path.length():
+		var path := multimesh.resource_path
+		multimesh = multi_new
+		multimesh.take_over_path(path)
+	else:
+		multimesh = multi_new
 	if _material != null:
 		for isur in range(multimesh.mesh.get_surface_count()):
-			multimesh.mesh.surface_set_material(isur, _material)
+			if multimesh.mesh.surface_get_material(isur) == null:
+				multimesh.mesh.surface_set_material(isur, _material)
 	if Engine.is_editor_hint():
 		baked_height_map = null
 		custom_aabb.position = Vector3.ZERO
 		custom_aabb.end = Vector3.ZERO
 
 
-func auto_center_position(editor_interface):
+func auto_center_position():
+	if multimesh == null:
+		multimesh = MultiMesh.new()
+		multimesh.mesh = mesh if mesh != null else _default_mesh
 	var aabb : AABB = multimesh.get_aabb()
 	var center : Vector3 = global_position + aabb.position + (aabb.size / 2)
 	var align : Vector3 = global_position - center
@@ -280,14 +295,20 @@ func auto_center_position(editor_interface):
 		var trans := multimesh.get_instance_transform(i)
 		trans.origin += align
 		multi_new.set_instance_transform(i, trans)
-	multimesh = multi_new
+	if Engine.is_editor_hint() and multimesh.resource_path.length():
+		var path := multimesh.resource_path
+		multimesh = multi_new
+		multimesh.take_over_path(path)
+	else:
+		multimesh = multi_new
 	if _material != null:
 		for isur in range(multimesh.mesh.get_surface_count()):
-			multimesh.mesh.surface_set_material(isur, _material)
+			if multimesh.mesh.surface_get_material(isur) == null:
+				multimesh.mesh.surface_set_material(isur, _material)
 	if Engine.is_editor_hint():
 		if baked_height_map != null:
 			baked_height_map = null
-			bake_height_map(editor_interface)
+			bake_height_map()
 		custom_aabb.position = Vector3.ZERO
 		custom_aabb.end = Vector3.ZERO
 	else:
@@ -295,6 +316,9 @@ func auto_center_position(editor_interface):
 
 
 func recalculate_custom_aabb():
+	if multimesh == null:
+		multimesh = MultiMesh.new()
+		multimesh.mesh = mesh if mesh != null else _default_mesh
 	var start := Vector3.ONE * 0x7FFFFFFF
 	var end := start * -1
 	var mesh_end := multimesh.mesh.get_aabb().end * Vector3(scale_w, scale_h, scale_w)
@@ -314,7 +338,8 @@ func recalculate_custom_aabb():
 
 func _update_multimesh():
 	if multimesh == null:
-		return
+		multimesh = MultiMesh.new()
+		multimesh.mesh = mesh if mesh != null else _default_mesh
 	var multi_new := MultiMesh.new()
 	var count_prev := multimesh.instance_count
 	multi_new.transform_format = MultiMesh.TRANSFORM_3D
@@ -352,10 +377,16 @@ func _update_multimesh():
 		multi_new.set_instance_transform(i, multimesh.get_instance_transform(i))
 	for i in range(_buffer_add.size()):
 		multi_new.set_instance_transform(i + count_prev, _buffer_add[i])
-	multimesh = multi_new
+	if Engine.is_editor_hint() and multimesh.resource_path.length():
+		var path := multimesh.resource_path
+		multimesh = multi_new
+		multimesh.take_over_path(path)
+	else:
+		multimesh = multi_new
 	if _material != null:
 		for isur in range(multimesh.mesh.get_surface_count()):
-			multimesh.mesh.surface_set_material(isur, _material)
+			if multimesh.mesh.surface_get_material(isur) == null:
+				multimesh.mesh.surface_set_material(isur, _material)
 	_buffer_add.clear()
 	temp_dist_min = 0
 	if Engine.is_editor_hint():
@@ -365,6 +396,9 @@ func _update_multimesh():
 
 
 func _create_height_map_image(local : bool) -> Image:
+	if multimesh == null:
+		multimesh = MultiMesh.new()
+		multimesh.mesh = mesh if mesh != null else _default_mesh
 	var aabb : AABB = multimesh.get_aabb()
 	var img_size := Vector2i(
 			clamp(snappedi(aabb.size.x * 4, 32), 32, 128),
@@ -425,9 +459,12 @@ func _local_height_map_to_global(img : Image) -> Image:
 	return result
 
 
-func bake_height_map(editor_interface):
+func bake_height_map():
 	if not Engine.is_editor_hint():
 		return null
+	if multimesh == null:
+		multimesh = MultiMesh.new()
+		multimesh.mesh = mesh if mesh != null else _default_mesh
 	await get_tree().process_frame
 	var _dummy = multimesh.buffer.size()
 	await get_tree().process_frame
@@ -435,13 +472,21 @@ func bake_height_map(editor_interface):
 	baked_height_map = img
 
 
-func clear_all(editor_interface = null):
-	multimesh = MultiMesh.new()
+func clear_all():
+	if multimesh == null:
+		multimesh = MultiMesh.new()
+	if Engine.is_editor_hint() and multimesh.resource_path.length():
+		var path := multimesh.resource_path
+		multimesh = MultiMesh.new()
+		multimesh.take_over_path(path)
+	else:
+		multimesh = MultiMesh.new()
+	multimesh.mesh = mesh if mesh != null else _default_mesh
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	if Engine.is_editor_hint():
 		if baked_height_map != null:
 			baked_height_map = null
-			bake_height_map(editor_interface)
+			bake_height_map()
 		custom_aabb.position = Vector3.ZERO
 		custom_aabb.end = Vector3.ZERO
 
@@ -449,6 +494,9 @@ func clear_all(editor_interface = null):
 func _update_height_map():
 	if Engine.is_editor_hint():
 		return
+	if multimesh == null:
+		multimesh = MultiMesh.new()
+		multimesh.mesh = mesh if mesh != null else _default_mesh
 	
 	var img : Image = null
 	
@@ -529,9 +577,13 @@ func _on_set_light_mode(value : int):
 			return
 	if _material != null:
 		_material.set_shader_parameter("light_mode", light_mode)
+		if multimesh == null:
+			multimesh = MultiMesh.new()
+			multimesh.mesh = mesh if mesh != null else _default_mesh
 		if multimesh.mesh != null:
 			for isur in range(multimesh.mesh.get_surface_count()):
-				multimesh.mesh.surface_set_material(isur, _material)
+				if multimesh.mesh.surface_get_material(isur) == null:
+					multimesh.mesh.surface_set_material(isur, _material)
 
 
 func _on_set_texture_normal(value : Texture):

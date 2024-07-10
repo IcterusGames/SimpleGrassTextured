@@ -10,6 +10,7 @@
 
 [node name="SimpleGrassTexturedHelpAbout" type="AcceptDialog"]
 title = "About"
+position = Vector2i(0, 36)
 size = Vector2i(520, 240)
 min_size = Vector2i(520, 200)
 max_size = Vector2i(1280, 720)
@@ -55,7 +56,7 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_hnw4u")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_lwftf")
 bbcode_enabled = true
 text = "Simple Grass Textured Plugin
-v. 2.0.4
+v. 2.0.5
 by IcterusGames
 [font_size=7] [/font_size]
 [b]Support me on:[/b]
@@ -66,4 +67,6 @@ by IcterusGames
 [indent][url]https://github.com/IcterusGames/SimpleGrassTextured[/url][/indent]
 "
 
+[connection signal="canceled" from="." to="." method="_on_canceled"]
+[connection signal="confirmed" from="." to="." method="_on_confirmed"]
 [connection signal="meta_clicked" from="MarginContainer/HBoxContainer/RichTextLabel" to="." method="_on_rich_text_label_meta_clicked"]
