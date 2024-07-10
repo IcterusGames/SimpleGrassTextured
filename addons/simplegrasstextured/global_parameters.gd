@@ -29,16 +29,16 @@ const DEFAULT_WIND_STRENGTH := 0.15
 const DEFAULT_WIND_TURBULENCE := 1.0
 const DEFAULT_WIND_PATTERN := "res://addons/simplegrasstextured/images/wind_pattern.png"
 
-var _wind_dir_x_slider : EditorSpinSlider
-var _wind_dir_y_slider : EditorSpinSlider
-var _wind_dir_z_slider : EditorSpinSlider
-var _wind_strength_slider : EditorSpinSlider
-var _wind_turbulence_slider : EditorSpinSlider
-var _wind_pattern : EditorResourcePicker
+var _wind_dir_x_slider :EditorSpinSlider
+var _wind_dir_y_slider :EditorSpinSlider
+var _wind_dir_z_slider :EditorSpinSlider
+var _wind_strength_slider :EditorSpinSlider
+var _wind_turbulence_slider :EditorSpinSlider
+var _wind_pattern :EditorResourcePicker
 
 
-func _ready():
-	name = "SimpleGrassTexturedGlobalParameters"
+func _ready() -> void:
+	name = &"SimpleGrassTexturedGlobalParameters"
 	size = Vector2.ZERO
 	_wind_dir_x_slider = _create_slider("X", -1, 1, 0.01)
 	_wind_dir_y_slider = _create_slider("Y", -1, 1, 0.01)
@@ -61,10 +61,9 @@ func _ready():
 	%WindTurbulenceHBox.add_child(_wind_turbulence_slider)
 	%WindPatternHBox.add_child(_wind_pattern)
 	get_ok_button().custom_minimum_size.x = 100
-	_on_theme_changed()
 
 
-func _create_slider(label : String, min : float, max : float, step : float) -> EditorSpinSlider:
+func _create_slider(label :String, min :float, max :float, step :float) -> EditorSpinSlider:
 	var slider := EditorSpinSlider.new()
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.step = step;
@@ -75,7 +74,7 @@ func _create_slider(label : String, min : float, max : float, step : float) -> E
 	return slider
 
 
-func disable_button(button : Button, disabled : bool) -> void:
+func disable_button(button :Button, disabled :bool) -> void:
 	if disabled:
 		button.disabled = true
 		button.modulate.a = 0
@@ -86,8 +85,15 @@ func disable_button(button : Button, disabled : bool) -> void:
 		button.focus_mode = Control.FOCUS_ALL
 
 
-func _on_about_to_popup():
-	var windir : Vector3 = ProjectSettings.get_setting("shader_globals/sgt_wind_direction").value
+func on_theme_changed() -> void:
+	%DefaultWindDirButton.icon = get_theme_icon(&"Reload", &"EditorIcons")
+	%DefaultWindStrengthButton.icon = get_theme_icon(&"Reload", &"EditorIcons")
+	%DefaultWindTurbulenceButton.icon = get_theme_icon(&"Reload", &"EditorIcons")
+	%DefaultWindPatternButton.icon = get_theme_icon(&"Reload", &"EditorIcons")
+
+
+func _on_about_to_popup() -> void:
+	var windir :Vector3 = ProjectSettings.get_setting("shader_globals/sgt_wind_direction").value
 	_wind_dir_x_slider.value = windir.x
 	_wind_dir_y_slider.value = windir.y
 	_wind_dir_z_slider.value = windir.z
@@ -95,10 +101,11 @@ func _on_about_to_popup():
 	_wind_turbulence_slider.value = ProjectSettings.get_setting("shader_globals/sgt_wind_turbulence").value
 	_wind_pattern.edited_resource = load(ProjectSettings.get_setting("shader_globals/sgt_wind_pattern").value)
 	_on_wind_pattern_resource_changed(_wind_pattern.edited_resource)
+	on_theme_changed()
 
 
-func _on_wind_dir_x_value_changed(value : float):
-	var windir : Vector3 = ProjectSettings.get_setting("shader_globals/sgt_wind_direction", {"value":Vector3.RIGHT}).value
+func _on_wind_dir_x_value_changed(value :float) -> void:
+	var windir :Vector3 = ProjectSettings.get_setting("shader_globals/sgt_wind_direction", {"value":Vector3.RIGHT}).value
 	windir.x = value
 	ProjectSettings.set_setting("shader_globals/sgt_wind_direction", {
 		"type": "vec3",
@@ -106,12 +113,12 @@ func _on_wind_dir_x_value_changed(value : float):
 	})
 	RenderingServer.global_shader_parameter_set("sgt_wind_direction", windir)
 	$SaveConfigTimer.start()
-	get_tree().emit_signal("sgt_globals_params_changed")
+	get_tree().emit_signal(&"sgt_globals_params_changed")
 	disable_button(%DefaultWindDirButton, windir == DEFAULT_WIND_DIR)
 
 
-func _on_wind_dir_y_value_changed(value : float):
-	var windir : Vector3 = ProjectSettings.get_setting("shader_globals/sgt_wind_direction", {"value":Vector3.RIGHT}).value
+func _on_wind_dir_y_value_changed(value :float) -> void:
+	var windir :Vector3 = ProjectSettings.get_setting("shader_globals/sgt_wind_direction", {"value":Vector3.RIGHT}).value
 	windir.y = value
 	ProjectSettings.set_setting("shader_globals/sgt_wind_direction", {
 		"type": "vec3",
@@ -119,12 +126,12 @@ func _on_wind_dir_y_value_changed(value : float):
 	})
 	RenderingServer.global_shader_parameter_set("sgt_wind_direction", windir)
 	$SaveConfigTimer.start()
-	get_tree().emit_signal("sgt_globals_params_changed")
+	get_tree().emit_signal(&"sgt_globals_params_changed")
 	disable_button(%DefaultWindDirButton, windir == DEFAULT_WIND_DIR)
 
 
-func _on_wind_dir_z_value_changed(value : float):
-	var windir : Vector3 = ProjectSettings.get_setting("shader_globals/sgt_wind_direction", {"value":Vector3.RIGHT}).value
+func _on_wind_dir_z_value_changed(value :float) -> void:
+	var windir :Vector3 = ProjectSettings.get_setting("shader_globals/sgt_wind_direction", {"value":Vector3.RIGHT}).value
 	windir.z = value
 	ProjectSettings.set_setting("shader_globals/sgt_wind_direction", {
 		"type": "vec3",
@@ -132,33 +139,33 @@ func _on_wind_dir_z_value_changed(value : float):
 	})
 	RenderingServer.global_shader_parameter_set("sgt_wind_direction", windir)
 	$SaveConfigTimer.start()
-	get_tree().emit_signal("sgt_globals_params_changed")
+	get_tree().emit_signal(&"sgt_globals_params_changed")
 	disable_button(%DefaultWindDirButton, windir == DEFAULT_WIND_DIR)
 
 
-func _on_wind_strength_value_changed(value : float):
+func _on_wind_strength_value_changed(value :float) -> void:
 	ProjectSettings.set_setting("shader_globals/sgt_wind_strength", {
 		"type": "float",
 		"value": value
 	})
 	RenderingServer.global_shader_parameter_set("sgt_wind_strength", value)
 	$SaveConfigTimer.start()
-	get_tree().emit_signal("sgt_globals_params_changed")
+	get_tree().emit_signal(&"sgt_globals_params_changed")
 	disable_button(%DefaultWindStrengthButton, _wind_strength_slider.value == DEFAULT_WIND_STRENGTH)
 
 
-func _on_wind_turbulence_value_changed(value : float):
+func _on_wind_turbulence_value_changed(value :float) -> void:
 	ProjectSettings.set_setting("shader_globals/sgt_wind_turbulence", {
 		"type": "float",
 		"value": value
 	})
 	RenderingServer.global_shader_parameter_set("sgt_wind_turbulence", value)
 	$SaveConfigTimer.start()
-	get_tree().emit_signal("sgt_globals_params_changed")
+	get_tree().emit_signal(&"sgt_globals_params_changed")
 	disable_button(%DefaultWindTurbulenceButton, _wind_turbulence_slider.value == DEFAULT_WIND_TURBULENCE)
 
 
-func _on_wind_pattern_resource_changed(resource : Resource):
+func _on_wind_pattern_resource_changed(resource :Resource) -> void:
 	if resource.resource_path == "":
 		_wind_pattern.edited_resource = load(DEFAULT_WIND_PATTERN)
 		_on_wind_pattern_resource_changed(_wind_pattern.edited_resource)
@@ -169,39 +176,37 @@ func _on_wind_pattern_resource_changed(resource : Resource):
 	})
 	RenderingServer.global_shader_parameter_set("sgt_wind_pattern", load(resource.resource_path))
 	$SaveConfigTimer.start()
-	get_tree().emit_signal("sgt_globals_params_changed")
+	get_tree().emit_signal(&"sgt_globals_params_changed")
 	disable_button(%DefaultWindPatternButton, resource.resource_path == DEFAULT_WIND_PATTERN)
 
 
-func _on_theme_changed():
-	%DefaultWindDirButton.icon = get_theme_icon("Reload", "EditorIcons")
-	%DefaultWindStrengthButton.icon = get_theme_icon("Reload", "EditorIcons")
-	%DefaultWindTurbulenceButton.icon = get_theme_icon("Reload", "EditorIcons")
-	%DefaultWindPatternButton.icon = get_theme_icon("Reload", "EditorIcons")
-
-
-func _on_save_config_timer_timeout():
+func _on_save_config_timer_timeout() -> void:
 	ProjectSettings.save()
 
 
-func _on_confirmed():
+func _on_canceled():
+	queue_free()
+
+
+func _on_confirmed() -> void:
 	ProjectSettings.save()
+	queue_free()
 
 
-func _on_default_wind_dir_button_pressed():
+func _on_default_wind_dir_button_pressed() -> void:
 	_wind_dir_x_slider.value = DEFAULT_WIND_DIR.x
 	_wind_dir_y_slider.value = DEFAULT_WIND_DIR.y
 	_wind_dir_z_slider.value = DEFAULT_WIND_DIR.z
 
 
-func _on_default_wind_strength_button_pressed():
+func _on_default_wind_strength_button_pressed() -> void:
 	_wind_strength_slider.value = DEFAULT_WIND_STRENGTH
 
 
-func _on_default_wind_turbulence_button_pressed():
+func _on_default_wind_turbulence_button_pressed() -> void:
 	_wind_turbulence_slider.value = DEFAULT_WIND_TURBULENCE
 
 
-func _on_default_wind_pattern_button_pressed():
+func _on_default_wind_pattern_button_pressed() -> void:
 	_wind_pattern.edited_resource = load(DEFAULT_WIND_PATTERN)
 	_on_wind_pattern_resource_changed(_wind_pattern.edited_resource)

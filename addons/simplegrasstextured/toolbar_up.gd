@@ -25,5 +25,9 @@
 extends Control
 
 
-func set_current_grass(editor_interface : EditorInterface, grass):
-	$MenuButton.set_current_grass(editor_interface, grass)
+func set_plugin(plugin :EditorPlugin) -> void:
+	$MenuButton.set_plugin(plugin)
+
+
+func set_current_grass(grass) -> void:
+	$MenuButton.set_current_grass(grass)

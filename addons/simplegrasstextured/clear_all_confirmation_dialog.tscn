@@ -8,3 +8,6 @@ ok_button_text = "Yes"
 dialog_text = "Are you sure you want to remove all the grass?"
 cancel_button_text = "No"
 script = ExtResource("1_xk6u2")
+
+[connection signal="canceled" from="." to="." method="_on_canceled"]
+[connection signal="confirmed" from="." to="." method="_on_confirmed"]

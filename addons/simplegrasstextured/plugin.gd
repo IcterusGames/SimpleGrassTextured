@@ -54,27 +54,125 @@ var _mouse_event := EVENT_MOUSE.EVENT_NONE
 var _project_ray_origin := Vector3.INF
 var _project_ray_normal := Vector3.INF
 var _inspector_plugin : EditorInspectorPlugin = null
+var _prev_config := ""
+var _custom_settings := [{
+		"name": "SimpleGrassTextured/General/default_terrain_physics_layer",
+		"type": TYPE_INT,
+		"hint": PROPERTY_HINT_LAYERS_3D_PHYSICS,
+		"hint_string": "",
+		"default": pow(2, 32) - 1,
+		"basic": true
+	},{
+		"name": "SimpleGrassTextured/General/interactive_resolution",
+		"type": TYPE_INT,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": "Low:256,High:512",
+		"default": 512,
+		"basic": false
+	},{
+		"name": "SimpleGrassTextured/General/interactive_resolution.android",
+		"type": TYPE_INT,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": "Low:256,High:512",
+		"default": 256,
+		"basic": false
+	},{
+		"name": "SimpleGrassTextured/General/interactive_resolution.ios",
+		"type": TYPE_INT,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": "Low:256,High:512",
+		"default": 256,
+		"basic": false
+	},{
+		"name": "SimpleGrassTextured/Shortcuts/draw",
+		"type": TYPE_OBJECT,
+		"hint": PROPERTY_HINT_RESOURCE_TYPE,
+		"hint_string": "Shortcut",
+		"default": _create_shortcut(KEY_D),
+		"basic": true
+	},{
+		"name": "SimpleGrassTextured/Shortcuts/fill",
+		"type": TYPE_OBJECT,
+		"hint": PROPERTY_HINT_RESOURCE_TYPE,
+		"hint_string": "Shortcut",
+		"default": _create_shortcut(KEY_B),
+		"basic": true
+	},{
+		"name": "SimpleGrassTextured/Shortcuts/erase",
+		"type": TYPE_OBJECT,
+		"hint": PROPERTY_HINT_RESOURCE_TYPE,
+		"hint_string": "Shortcut",
+		"default": _create_shortcut(KEY_X),
+		"basic": true
+	},{
+		"name": "SimpleGrassTextured/Shortcuts/radius_increment",
+		"type": TYPE_OBJECT,
+		"hint": PROPERTY_HINT_RESOURCE_TYPE,
+		"hint_string": "Shortcut",
+		"default": _create_shortcut(KEY_BRACKETRIGHT),
+		"basic": true
+	},{
+		"name": "SimpleGrassTextured/Shortcuts/radius_decrement",
+		"type": TYPE_OBJECT,
+		"hint": PROPERTY_HINT_RESOURCE_TYPE,
+		"hint_string": "Shortcut",
+		"default": _create_shortcut(KEY_BRACKETLEFT),
+		"basic": true
+	},{
+		"name": "SimpleGrassTextured/Shortcuts/density_increment",
+		"type": TYPE_OBJECT,
+		"hint": PROPERTY_HINT_RESOURCE_TYPE,
+		"hint_string": "Shortcut",
+		"default": _create_shortcut(KEY_EQUAL),
+		"basic": true
+	},{
+		"name": "SimpleGrassTextured/Shortcuts/density_decrement",
+		"type": TYPE_OBJECT,
+		"hint": PROPERTY_HINT_RESOURCE_TYPE,
+		"hint_string": "Shortcut",
+		"default": _create_shortcut(KEY_MINUS),
+		"basic": true
+	}
+]
 
 
 func _enter_tree():
-	if not get_tree().has_user_signal("sgt_globals_params_changed"):
-		get_tree().add_user_signal("sgt_globals_params_changed")
+	if not get_tree().has_user_signal(&"sgt_globals_params_changed"):
+		get_tree().add_user_signal(&"sgt_globals_params_changed")
 	_verify_global_shader_parameters()
+	_init_default_project_settings()
+	_prev_config = _custom_config_memorize()
+	if ProjectSettings.has_signal(&"settings_changed"):
+		ProjectSettings.connect(&"settings_changed", _on_project_settings_changed)
+	# Must ensure the resource file of default_mesh.tres match the current Godot version
+	var default_mesh = load("res://addons/simplegrasstextured/default_mesh.tres")
+	if not default_mesh.has_meta(&"GodotVersion") or default_mesh.get_meta(&"GodotVersion") != Engine.get_version_info()["string"]:
+		print("SimpleGrassTextured, updating file res://addons/simplegrasstextured/default_mesh.tres")
+		default_mesh = null
+		var mesh_builder = load("res://addons/simplegrasstextured/default_mesh_builder.gd").new()
+		mesh_builder.rebuild_and_save_default_mesh()
+		default_mesh = load("res://addons/simplegrasstextured/default_mesh.tres")
+		default_mesh.emit_changed()
 	add_custom_type(
 		"SimpleGrassTextured",
 		"MultiMeshInstance3D",
 		load("res://addons/simplegrasstextured/grass.gd"),
 		load("res://addons/simplegrasstextured/sgt_icon.svg")
 	)
+	
 	_gui_toolbar = load("res://addons/simplegrasstextured/toolbar.tscn").instantiate()
 	_gui_toolbar.visible = false
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_BOTTOM, _gui_toolbar)
+	_gui_toolbar.set_plugin(self)
+	
 	_gui_toolbar_up = load("res://addons/simplegrasstextured/toolbar_up.tscn").instantiate()
 	_gui_toolbar_up.visible = false
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, _gui_toolbar_up)
+	_gui_toolbar_up.set_plugin(self)
+	
 	_inspector_plugin = load("res://addons/simplegrasstextured/sgt_inspector.gd").new()
-	_inspector_plugin.about_pressed.connect(_on_about_pressed)
 	add_inspector_plugin(_inspector_plugin)
+	
 	_raycast_3d = RayCast3D.new()
 	_raycast_3d.collision_mask = pow(2, 32) - 1
 	_raycast_3d.visible = false
@@ -84,6 +182,7 @@ func _enter_tree():
 	_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
 	add_child(_raycast_3d)
 	add_child(_decal_pointer)
+	
 	_gui_toolbar.slider_radius.value_changed.connect(_on_slider_radius_value_changed)
 	_gui_toolbar.slider_density.value_changed.connect(_on_slider_density_value_changed)
 	_gui_toolbar.button_draw.toggled.connect(_on_button_draw_toggled)
@@ -97,6 +196,10 @@ func _enter_tree():
 
 
 func _exit_tree():
+	var current_config := _custom_config_memorize()
+	if current_config != _prev_config:
+		# Force save settings if some shortcut has been changed
+		ProjectSettings.save()
 	_grass_selected = null
 	_raycast_3d.queue_free()
 	_decal_pointer.queue_free()
@@ -133,6 +236,9 @@ func _disable_plugin():
 		ProjectSettings.set_setting("shader_globals/sgt_wind_turbulence", null)
 	if ProjectSettings.has_setting("shader_globals/sgt_wind_pattern"):
 		ProjectSettings.set_setting("shader_globals/sgt_wind_pattern", null)
+	# Remove custom settings from Project Settings
+	for entry in _custom_settings:
+		ProjectSettings.set(entry["name"], null)
 	# Fix editor crash when disable plugin while SimpleGrassTextured node is selected
 	_grass_selected = null
 	var editor = get_editor_interface()
@@ -174,8 +280,8 @@ func _make_visible(visible : bool):
 		_gui_toolbar_up.visible = false
 		_decal_pointer.visible = false
 		_grass_selected = null
-		_gui_toolbar.set_current_grass(null, null)
-		_gui_toolbar_up.set_current_grass(null, null)
+		_gui_toolbar.set_current_grass(null)
+		_gui_toolbar_up.set_current_grass(null)
 
 
 func _physics_process(_delta):
@@ -328,6 +434,43 @@ func _verify_global_shader_parameters():
 	add_autoload_singleton("SimpleGrass", "res://addons/simplegrasstextured/singleton.tscn")
 
 
+func _create_shortcut(keycode :Key) -> Shortcut:
+	var shortcut := Shortcut.new()
+	var key := InputEventKey.new()
+	key.keycode = keycode
+	key.pressed = true
+	shortcut.events.append(key)
+	return shortcut
+
+
+func _custom_config_memorize() -> String:
+	var config := ConfigFile.new()
+	for entry in _custom_settings:
+		config.set_value("s", entry["name"], ProjectSettings.get_setting_with_override(entry["name"]))
+	return config.encode_to_text()
+
+
+func get_custom_setting(name :String) -> Variant:
+	if ProjectSettings.has_setting(name):
+		return ProjectSettings.get_setting_with_override(name)
+	for entry in _custom_settings:
+		if entry["name"] != name:
+			continue
+		return entry["default"]
+	push_error("SimpleGrassTextured, setting not found: ", name)
+	return null
+
+
+func _init_default_project_settings() -> void:
+	for entry in _custom_settings:
+		if not ProjectSettings.has_setting(entry["name"]):
+			ProjectSettings.set(entry["name"], entry["default"])
+		ProjectSettings.set_initial_value(entry["name"], entry["default"])
+		ProjectSettings.add_property_info(entry)
+		if entry.has("basic") and ProjectSettings.has_method(&"set_as_basic"):
+			ProjectSettings.call(&"set_as_basic", entry["name"], entry["basic"])
+
+
 func _update_gui():
 	if _grass_selected != null:
 		_gui_toolbar.slider_radius.value = _grass_selected.sgt_radius
@@ -336,11 +479,15 @@ func _update_gui():
 		_gui_toolbar.edit_rotation.value = _grass_selected.sgt_rotation
 		_gui_toolbar.edit_rotation_rand.value = _grass_selected.sgt_rotation_rand
 		_gui_toolbar.edit_distance.value = _grass_selected.sgt_dist_min
-		_gui_toolbar.set_current_grass(get_editor_interface(), _grass_selected)
-		_gui_toolbar_up.set_current_grass(get_editor_interface(), _grass_selected)
+		_gui_toolbar.set_current_grass(_grass_selected)
+		_gui_toolbar_up.set_current_grass(_grass_selected)
 		if _grass_selected.multimesh != null:
 			_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)
 		_raycast_3d.collision_mask = _grass_selected.collision_mask
+
+
+func _on_project_settings_changed() -> void:
+	_prev_config = _custom_config_memorize()
 
 
 func _on_button_draw_toggled(pressed : bool):
@@ -417,6 +564,7 @@ func _on_set_draw(value : bool):
 	if _edit_draw:
 		_decal_pointer.modulate = Color.WHITE
 		_gui_toolbar.slider_density.editable = true
+		_gui_toolbar.button_density.disabled = false
 	_gui_toolbar.button_draw.button_pressed = _edit_draw
 
 
@@ -425,6 +573,7 @@ func _on_set_fill(value : bool):
 	if _edit_fill:
 		_decal_pointer.modulate = Color.YELLOW
 		_gui_toolbar.slider_density.editable = false
+		_gui_toolbar.button_density.disabled = true
 	_gui_toolbar.button_fill.button_pressed = _edit_fill
 
 
@@ -433,11 +582,8 @@ func _on_set_erase(value : bool):
 	if _edit_erase:
 		_decal_pointer.modulate = Color.RED
 		_gui_toolbar.slider_density.editable = false
+		_gui_toolbar.button_density.disabled = true
 	_gui_toolbar.button_erase.button_pressed = _edit_erase
-
-
-func _on_about_pressed():
-	_gui_toolbar.show_about()
 
 
 func _eval_brush():

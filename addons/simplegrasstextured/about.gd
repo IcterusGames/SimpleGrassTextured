@@ -27,13 +27,21 @@ extends AcceptDialog
 @export_multiline var message := ""
 
 
-func _ready():
+func _ready() -> void:
 	var config := ConfigFile.new()
 	config.load("res://addons/simplegrasstextured/plugin.cfg")
 	%RichTextLabel.text = message.format({"_version_num":config.get_value("plugin", "version")})
-	name = "SimpleGrassTexturedHelpAbout"
+	name = &"SimpleGrassTexturedHelpAbout"
 	get_ok_button().custom_minimum_size.x = 100
 
 
-func _on_rich_text_label_meta_clicked(meta):
+func _on_rich_text_label_meta_clicked(meta :Variant) -> void:
 	OS.shell_open(str(meta))
+
+
+func _on_canceled() -> void:
+	queue_free()
+
+
+func _on_confirmed() -> void:
+	queue_free()

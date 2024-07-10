@@ -35,20 +35,14 @@ enum MENU_ID {
 	RECALCULATE_AABB,
 }
 
-var _global_parameters = load("res://addons/simplegrasstextured/global_parameters.tscn").instantiate()
-var _clear_all_confirmation = load("res://addons/simplegrasstextured/clear_all_confirmation_dialog.tscn").instantiate()
 var _grass_selected = null
-var _tools_menu : PopupMenu = null
-var _editor_interface : EditorInterface = null
+var _tools_menu :PopupMenu = null
 
 
-func _ready():
-	get_window().call_deferred(StringName("add_child"), _global_parameters)
-	get_window().call_deferred(StringName("add_child"), _clear_all_confirmation)
-	_clear_all_confirmation.confirmed.connect(_on_clear_all_confirmation_dialog_confirmed)
+func set_plugin(_plugin :EditorPlugin) -> void:
 	var popup := get_popup()
 	_tools_menu = PopupMenu.new()
-	_tools_menu.name = "ToolsMenu"
+	_tools_menu.name = &"ToolsMenu"
 	_tools_menu.add_check_item("Follow terrain's normal", MENU_ID.TOOL_FOLLOW_NORMAL)
 	popup.add_child(_tools_menu)
 	popup.clear()
@@ -68,8 +62,7 @@ func _ready():
 	about_to_popup.connect(_on_about_to_popup)
 
 
-func set_current_grass(editor_interface : EditorInterface, grass_selected):
-	_editor_interface = editor_interface
+func set_current_grass(grass_selected) -> void:
 	_grass_selected = grass_selected
 	if grass_selected == null:
 		return
@@ -82,12 +75,12 @@ func set_current_grass(editor_interface : EditorInterface, grass_selected):
 	_tools_menu.set_item_checked(_tools_menu.get_item_index(MENU_ID.TOOL_FOLLOW_NORMAL), _grass_selected.sgt_follow_normal)
 
 
-func _on_sgt_menu_button(id : int):
+func _on_sgt_menu_button(id :int) -> void:
 	if _grass_selected == null:
 		return
 	match id:
 		MENU_ID.AUTO_CENTER_POSITION:
-			_grass_selected.auto_center_position(_editor_interface)
+			_grass_selected.auto_center_position()
 		MENU_ID.RECALCULATE_AABB:
 			_grass_selected.recalculate_custom_aabb()
 		MENU_ID.CAST_SHADOW:
@@ -96,18 +89,23 @@ func _on_sgt_menu_button(id : int):
 			else:
 				_grass_selected.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		MENU_ID.BAKE_HEIGHT_MAP:
-			_grass_selected.bake_height_map(_editor_interface)
+			_grass_selected.bake_height_map()
 		MENU_ID.GLOBAL_PARAMETERS:
+			var _global_parameters = load("res://addons/simplegrasstextured/global_parameters.tscn").instantiate()
+			get_window().add_child(_global_parameters)
 			_global_parameters.popup_centered()
 		MENU_ID.CLEAR_ALL:
-			_clear_all_confirmation.popup_centered()
+			var win = load("res://addons/simplegrasstextured/clear_all_confirmation_dialog.tscn").instantiate()
+			get_window().add_child(win)
+			win.confirmed.connect(_on_clear_all_confirmation_dialog_confirmed)
+			win.popup_centered()
 		MENU_ID.HELP_ABOUT:
-			var about = get_window().get_node("SimpleGrassTexturedHelpAbout")
-			if about != null:
-				about.popup_centered()
+			var win = load("res://addons/simplegrasstextured/about.tscn").instantiate()
+			get_window().add_child(win)
+			win.popup_centered()
 
 
-func _on_sgt_tools_menu_button(id : int):
+func _on_sgt_tools_menu_button(id :int) -> void:
 	if _grass_selected == null:
 		return
 	match id:
@@ -116,12 +114,11 @@ func _on_sgt_tools_menu_button(id : int):
 			_grass_selected.sgt_follow_normal = _tools_menu.is_item_checked(id)
 
 
-func _on_about_to_popup():
-	set_current_grass(_editor_interface, _grass_selected)
+func _on_about_to_popup() -> void:
+	set_current_grass(_grass_selected)
 
 
-func _on_clear_all_confirmation_dialog_confirmed():
+func _on_clear_all_confirmation_dialog_confirmed() -> void:
 	if _grass_selected == null:
 		return
-	_grass_selected.clear_all(_editor_interface)
-
+	_grass_selected.clear_all()

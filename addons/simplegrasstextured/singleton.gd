@@ -61,16 +61,18 @@ var _timer_debug : Timer = null
 @onready var _blur2_rect := $Blur2/Blur2Rect as ColorRect
 
 
-func _ready():
-	if OS.get_name() == "Android" or OS.get_name() == "iOS":
+func _ready() -> void:
+	if ProjectSettings.has_setting("SimpleGrassTextured/General/interactive_resolution"):
+		_RESOLUTION = ProjectSettings.get_setting_with_override("SimpleGrassTextured/General/interactive_resolution")
+	elif OS.get_name() == "Android" or OS.get_name() == "iOS":
 		_RESOLUTION = 256.0
-		_PIXEL_STEEP = Vector3(50.0 / _RESOLUTION, 50.0 / _RESOLUTION, 50.0 / _RESOLUTION)
+	_PIXEL_STEEP = Vector3(50.0 / _RESOLUTION, 50.0 / _RESOLUTION, 50.0 / _RESOLUTION)
 	wind_direction = ProjectSettings.get_setting("shader_globals/sgt_wind_direction", {"value":wind_direction}).value
 	wind_strength = ProjectSettings.get_setting("shader_globals/sgt_wind_strength", {"value":wind_strength}).value
 	wind_turbulence = ProjectSettings.get_setting("shader_globals/sgt_wind_turbulence", {"value":wind_turbulence}).value
-	RenderingServer.global_shader_parameter_set("sgt_wind_direction", wind_direction)
-	RenderingServer.global_shader_parameter_set("sgt_wind_strength", wind_strength)
-	RenderingServer.global_shader_parameter_set("sgt_wind_turbulence", wind_turbulence)
+	RenderingServer.global_shader_parameter_set(&"sgt_wind_direction", wind_direction)
+	RenderingServer.global_shader_parameter_set(&"sgt_wind_strength", wind_strength)
+	RenderingServer.global_shader_parameter_set(&"sgt_wind_turbulence", wind_turbulence)
 	_height_cam.size = 50.0
 	_dist_cam.size = 50.0
 	_dist_mesh.mesh.size = Vector2(50.0, 50.0)
@@ -87,25 +89,25 @@ func _ready():
 	_blur2_view.size = _dist_view.size
 	_blur2_view.size_2d_override = _dist_view.size
 	if Engine.is_editor_hint():
-		get_tree().connect("sgt_globals_params_changed", _on_globals_params_changed)
+		get_tree().connect(&"sgt_globals_params_changed", _on_globals_params_changed)
 	else:
 		set_interactive(false)
 
 
-func _process(delta : float):
+func _process(delta : float) -> void:
 	if interactive:
 		_player_pos_snapped = player_position.snapped(_PIXEL_STEEP) / 50.0
 		_player_mov = _player_prev_pos - _player_pos_snapped
-		RenderingServer.global_shader_parameter_set("sgt_player_mov", _player_mov)
-		_motion1_rect.material.set_shader_parameter("delta", delta)
+		RenderingServer.global_shader_parameter_set(&"sgt_player_mov", _player_mov)
+		_motion1_rect.material.set_shader_parameter(&"delta", delta)
 		_player_prev_pos = _player_pos_snapped
 		_dist_cam.global_position = player_position.snapped(_PIXEL_STEEP) - _CAM_DIST
 		_height_cam.global_position = player_position + _CAM_DIST * 2
-		RenderingServer.global_shader_parameter_set("sgt_player_position", _player_pos_snapped)
+		RenderingServer.global_shader_parameter_set(&"sgt_player_position", _player_pos_snapped)
 	_time_wind += delta * wind_turbulence
 	_wind_movement += wind_direction * delta * 0.1 * wind_strength
 	_wind_movement.y = _time_wind
-	RenderingServer.global_shader_parameter_set("sgt_wind_movement", _wind_movement)
+	RenderingServer.global_shader_parameter_set(&"sgt_wind_movement", _wind_movement)
 
 
 func set_player_position(global_pos : Vector3) -> void:
@@ -114,21 +116,21 @@ func set_player_position(global_pos : Vector3) -> void:
 
 func set_wind_direction(direction : Vector3) -> void:
 	wind_direction = direction
-	RenderingServer.global_shader_parameter_set("sgt_wind_direction", wind_direction)
+	RenderingServer.global_shader_parameter_set(&"sgt_wind_direction", wind_direction)
 
 
 func set_wind_strength(strength : float) -> void:
 	wind_strength = strength
-	RenderingServer.global_shader_parameter_set("sgt_wind_strength", wind_strength)
+	RenderingServer.global_shader_parameter_set(&"sgt_wind_strength", wind_strength)
 
 
 func set_wind_turbulence(turbulence : float) -> void:
 	wind_turbulence = turbulence
-	RenderingServer.global_shader_parameter_set("sgt_wind_turbulence", wind_turbulence)
+	RenderingServer.global_shader_parameter_set(&"sgt_wind_turbulence", wind_turbulence)
 
 
 func set_wind_pattern(pattern : Texture) -> void:
-	RenderingServer.global_shader_parameter_set("sgt_wind_pattern", pattern)
+	RenderingServer.global_shader_parameter_set(&"sgt_wind_pattern", pattern)
 
 
 func set_interactive(enable : bool) -> void:
@@ -137,25 +139,25 @@ func set_interactive(enable : bool) -> void:
 	_dist_mesh.visible = interactive
 	if not interactive:
 		mode = SubViewport.UPDATE_ONCE
-		_dist_mesh.material_override.set_shader_parameter("heightmap_texture", _height_view.get_texture())
-		_motion2_rect.material.set_shader_parameter("prev_depth", load("res://addons/simplegrasstextured/images/motion.png"))
-		_motion1_rect.material.set_shader_parameter("prev_depth", load("res://addons/simplegrasstextured/images/motion.png"))
-		_motion1_rect.material.set_shader_parameter("cur_depth", load("res://addons/simplegrasstextured/images/motion.png"))
-		_normal_rect.material.set_shader_parameter("depth_texture", _motion1_view.get_texture())
-		_blur1_rect.material.set_shader_parameter("normal_texture", load("res://addons/simplegrasstextured/images/normal.png"))
-		_blur2_rect.material.set_shader_parameter("normal_texture", load("res://addons/simplegrasstextured/images/normal.png"))
-		RenderingServer.global_shader_parameter_set("sgt_normal_displacement", _blur2_view.get_texture())
-		RenderingServer.global_shader_parameter_set("sgt_motion_texture", _motion1_view.get_texture())
+		_dist_mesh.material_override.set_shader_parameter(&"heightmap_texture", _height_view.get_texture())
+		_motion2_rect.material.set_shader_parameter(&"prev_depth", load("res://addons/simplegrasstextured/images/motion.png"))
+		_motion1_rect.material.set_shader_parameter(&"prev_depth", load("res://addons/simplegrasstextured/images/motion.png"))
+		_motion1_rect.material.set_shader_parameter(&"cur_depth", load("res://addons/simplegrasstextured/images/motion.png"))
+		_normal_rect.material.set_shader_parameter(&"depth_texture", _motion1_view.get_texture())
+		_blur1_rect.material.set_shader_parameter(&"normal_texture", load("res://addons/simplegrasstextured/images/normal.png"))
+		_blur2_rect.material.set_shader_parameter(&"normal_texture", load("res://addons/simplegrasstextured/images/normal.png"))
+		RenderingServer.global_shader_parameter_set(&"sgt_normal_displacement", _blur2_view.get_texture())
+		RenderingServer.global_shader_parameter_set(&"sgt_motion_texture", _motion1_view.get_texture())
 	else:
-		_dist_mesh.material_override.set_shader_parameter("heightmap_texture", _height_view.get_texture())
-		_motion2_rect.material.set_shader_parameter("prev_depth", _motion1_view.get_texture())
-		_motion1_rect.material.set_shader_parameter("prev_depth", _motion2_view.get_texture())
-		_motion1_rect.material.set_shader_parameter("cur_depth", _dist_view.get_texture())
-		_normal_rect.material.set_shader_parameter("depth_texture", _motion1_view.get_texture())
-		_blur1_rect.material.set_shader_parameter("normal_texture", _normal_view.get_texture())
-		_blur2_rect.material.set_shader_parameter("normal_texture", _blur1_view.get_texture())
-		RenderingServer.global_shader_parameter_set("sgt_normal_displacement", _blur2_view.get_texture())
-		RenderingServer.global_shader_parameter_set("sgt_motion_texture", _motion1_view.get_texture())
+		_dist_mesh.material_override.set_shader_parameter(&"heightmap_texture", _height_view.get_texture())
+		_motion2_rect.material.set_shader_parameter(&"prev_depth", _motion1_view.get_texture())
+		_motion1_rect.material.set_shader_parameter(&"prev_depth", _motion2_view.get_texture())
+		_motion1_rect.material.set_shader_parameter(&"cur_depth", _dist_view.get_texture())
+		_normal_rect.material.set_shader_parameter(&"depth_texture", _motion1_view.get_texture())
+		_blur1_rect.material.set_shader_parameter(&"normal_texture", _normal_view.get_texture())
+		_blur2_rect.material.set_shader_parameter(&"normal_texture", _blur1_view.get_texture())
+		RenderingServer.global_shader_parameter_set(&"sgt_normal_displacement", _blur2_view.get_texture())
+		RenderingServer.global_shader_parameter_set(&"sgt_motion_texture", _motion1_view.get_texture())
 	_height_view.render_target_update_mode = mode
 	_dist_view.render_target_update_mode = mode
 	_normal_view.render_target_update_mode = mode
@@ -169,7 +171,7 @@ func is_interactive() -> bool:
 	return interactive
 
 
-func set_debugger_visible(show : bool):
+func set_debugger_visible(show : bool) -> void:
 	if show:
 		if _gui_debug == null:
 			_gui_debug = VBoxContainer.new()
@@ -213,7 +215,7 @@ func is_debugger_visible() -> bool:
 	return _gui_debug != null
 
 
-func _on_globals_params_changed():
+func _on_globals_params_changed() -> void:
 	wind_direction = ProjectSettings.get_setting("shader_globals/sgt_wind_direction", {"value":wind_direction}).value
 	wind_strength = ProjectSettings.get_setting("shader_globals/sgt_wind_strength", {"value":wind_strength}).value
 	wind_turbulence = ProjectSettings.get_setting("shader_globals/sgt_wind_turbulence", {"value":wind_turbulence}).value
@@ -235,7 +237,7 @@ func _new_debug_trect(texture : ViewportTexture, title : String) -> TextureRect:
 	return trect
 
 
-func _on_timer_debug():
+func _on_timer_debug() -> void:
 	var text1 := ""
 	var text2 := ""
 	text1 += "\nInteractive:"
