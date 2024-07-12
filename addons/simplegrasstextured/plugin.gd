@@ -140,6 +140,7 @@ func _enter_tree():
 	if not get_tree().has_user_signal(&"sgt_globals_params_changed"):
 		get_tree().add_user_signal(&"sgt_globals_params_changed")
 	_verify_global_shader_parameters()
+	_enable_shaders(true)
 	_init_default_project_settings()
 	_prev_config = _custom_config_memorize()
 	if ProjectSettings.has_signal(&"settings_changed"):
@@ -217,6 +218,7 @@ func _enable_plugin():
 
 
 func _disable_plugin():
+	_enable_shaders(false)
 	remove_autoload_singleton("SimpleGrass")
 	if ProjectSettings.has_setting("shader_globals/sgt_player_position"):
 		ProjectSettings.set_setting("shader_globals/sgt_player_position", null)
@@ -238,7 +240,8 @@ func _disable_plugin():
 		ProjectSettings.set_setting("shader_globals/sgt_wind_pattern", null)
 	# Remove custom settings from Project Settings
 	for entry in _custom_settings:
-		ProjectSettings.set(entry["name"], null)
+		if ProjectSettings.has_setting(entry["name"]):
+			ProjectSettings.set_setting(entry["name"], null)
 	# Fix editor crash when disable plugin while SimpleGrassTextured node is selected
 	_grass_selected = null
 	var editor = get_editor_interface()
@@ -432,6 +435,24 @@ func _verify_global_shader_parameters():
 		if RenderingServer.global_shader_parameter_get("sgt_wind_pattern") == null:
 			RenderingServer.global_shader_parameter_add("sgt_wind_pattern", RenderingServer.GLOBAL_VAR_TYPE_SAMPLER2D, load("res://addons/simplegrasstextured/images/wind_pattern.png"))
 	add_autoload_singleton("SimpleGrass", "res://addons/simplegrasstextured/singleton.tscn")
+
+
+func _enable_shaders(enable :bool) -> void:
+	if enable:
+		var dir := DirAccess.open("res://")
+		if dir.file_exists("res://addons/simplegrasstextured/shaders/.gdignore"):
+			dir.remove("res://addons/simplegrasstextured/shaders/.gdignore")
+		if dir.file_exists("res://addons/simplegrasstextured/materials/.gdignore"):
+			dir.remove("res://addons/simplegrasstextured/materials/.gdignore")
+		var editor = get_editor_interface()
+		editor.get_resource_filesystem().scan.call_deferred()
+	else:
+		var file := FileAccess.open("res://addons/simplegrasstextured/shaders/.gdignore", FileAccess.WRITE)
+		file.close()
+		file = FileAccess.open("res://addons/simplegrasstextured/materials/.gdignore", FileAccess.WRITE)
+		file.close()
+		var editor = get_editor_interface()
+		editor.get_resource_filesystem().scan.call_deferred()
 
 
 func _create_shortcut(keycode :Key) -> Shortcut:

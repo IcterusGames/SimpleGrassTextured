@@ -21,7 +21,6 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 ## Builds and saves the default grass mesh when called.
 func rebuild_and_save_default_mesh() -> void:
 	var array_mesh := ArrayMesh.new()
