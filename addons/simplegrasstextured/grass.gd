@@ -24,12 +24,25 @@
 @tool
 extends MultiMeshInstance3D
 
+## Define your custom mesh per grass, you can open a .obj, .mesh, etc, or can 
+## copy paste your own mesh from any mesh component. Set as null for default 
+## SimpleGrassTextured mesh.
 @export var mesh : Mesh = null : set = _on_set_mesh
+## Color albedo for mesh material
 @export_color_no_alpha var albedo := Color.WHITE : set = _on_set_albedo
+## Texture albedo for mesh, you can apply normal, metallic and roughness 
+## textures on the "Material parameters" section
 @export var texture_albedo : Texture = load("res://addons/simplegrasstextured/textures/grassbushcc008.png") : set = _on_set_texture_albedo
 @export_group("Material parameters")
+## Lets you setup a multi texture image by frames
 @export var texture_frames : Vector2i = Vector2i(1, 1) : set = _on_set_texture_frames;
+## Defines the texture image alpha threshold
 @export_range(0.0, 1.0) var alpha_scissor_threshold := 0.5 : set = _on_set_alpha_scissor_threshold
+## Ilumination mode[br]
+## [b]Lambert[/b][br]Recomended for complex meshes such as flowers[br][br]
+## [b]Normal grass[/b][br]The lighting will be calculated by the inclination of 
+## the grass, recommended for very simple meshes[br][br]
+## [b]Unshaded[/b][br]No lighting will affect the grass
 @export_enum("Lambert", "Normal grass", "Unshaded") var light_mode := 1 : set = _on_set_light_mode
 @export_subgroup("Normal")
 @export var texture_normal : Texture = null : set = _on_set_texture_normal
@@ -44,12 +57,33 @@ extends MultiMeshInstance3D
 @export_enum("Red","Green","Blue","Alpha","Gray") var roughness_texture_channel : int = 0 : set = _on_set_roughness_texture_channel
 @export_range(0.0, 1.0) var roughness := 1.0 : set = _on_set_roughness
 @export_group("")
+## Scale height factor of all the grass
 @export var scale_h := 1.0 : set = _on_set_scale_h
+## Scale width factor of all the grass
 @export var scale_w := 1.0 : set = _on_set_scale_w
+## Scale variable factor, scale of random grasses will be affected by this 
+## factor
 @export var scale_var := -0.25 : set = _on_set_scale_var
+## Defines the strength of this grass, with large values ​​the grass will not be 
+## moved by the wind, for example a bamboo can be 0.9 (it will almost not be 
+## affected by the wind), and a tall grass can be 0.2 (very affected by the 
+## wind)
 @export_range(0.0, 1.0) var grass_strength := 0.55 : set = _on_set_grass_strength
+## If true, this grass will be in "interactive mode", that means if an object 
+## is near the grass, the grass will react and move.[br][br]
+## [b]To setup the "interactive mode":[/b][br]
+## 1. You must enable by code on the begin of your scene by call 
+## [code]SimpleGrass.set_interactive(true)[/code][br]
+## 2. Setup your objects to be visible on the Visual Layer 17[br]
+## 3. Update the SimpleGrassTexture camera position by calling 
+## [code]SimpleGrass.set_player_position()[/code] regulary (on your _process 
+## function by example)[br][br]
+## [b]You can see how to enable "interactive mode" on:[/b][br]
+## [url]https://github.com/IcterusGames/SimpleGrassTextured?tab=readme-ov-file#how-to-enable-interactive-mode[/url]
 @export var interactive : bool = true : set = _on_set_interactive
+## Allows you to define how much the grass will react to objects on axis X and Z
 @export var interactive_level_xz : float = 3.0 : set = _on_set_instactive_level_xz
+## Allows you to define how much the grass will react to objects on axis Y
 @export var interactive_level_y : float = 0.3 : set = _on_set_instactive_level_y
 @export_group("Optimization")
 @export var optimization_by_distance := false : set = _on_set_optimization_by_distance
@@ -57,8 +91,13 @@ extends MultiMeshInstance3D
 @export var optimization_dist_min := 10.0 : set = _on_set_optimization_dist_min
 @export var optimization_dist_max := 50.0 : set = _on_set_optimization_dist_max
 @export_group("Height Map Data")
+## This is the baked height map of this grass, this will speed up the load of 
+## the scene. To setup this variable use the menu 
+## SimpleGrassTextured->"Bake height map" on the Editor 3D
 @export var baked_height_map : Image = null
-@export_group("Collision")
+@export_group("Draw Collision Mask")
+## This is the collision mask for drawing, this allows you to define what your 
+## terrain collision mask is, that way it will be easier to draw your grass.
 @export_flags_3d_physics var collision_mask :int = pow(2, 32) - 1
 
 var sgt_radius := 2.0
@@ -144,6 +183,10 @@ func _ready():
 			multimesh.mesh = _default_mesh
 	if light_mode == 2:
 		_material = load("res://addons/simplegrasstextured/materials/grass_unshaded.material").duplicate() as ShaderMaterial
+	for isur in range(multimesh.mesh.get_surface_count()):
+		if multimesh.mesh.surface_get_material(isur) != null:
+			_material = multimesh.mesh.surface_get_material(isur)
+			break
 	for isur in range(multimesh.mesh.get_surface_count()):
 		if multimesh.mesh.surface_get_material(isur) == null:
 			multimesh.mesh.surface_set_material(isur, _material)
