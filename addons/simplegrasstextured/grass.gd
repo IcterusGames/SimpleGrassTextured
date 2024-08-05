@@ -81,10 +81,15 @@ extends MultiMeshInstance3D
 ## [b]You can see how to enable "interactive mode" on:[/b][br]
 ## [url]https://github.com/IcterusGames/SimpleGrassTextured?tab=readme-ov-file#how-to-enable-interactive-mode[/url]
 @export var interactive : bool = true : set = _on_set_interactive
+@export_group("Advanced")
 ## Allows you to define how much the grass will react to objects on axis X and Z
 @export var interactive_level_xz : float = 3.0 : set = _on_set_instactive_level_xz
 ## Allows you to define how much the grass will react to objects on axis Y
 @export var interactive_level_y : float = 0.3 : set = _on_set_instactive_level_y
+## Locks the scale node of SimpleGrassTextured to 1
+@export var disable_node_scale := true : set = _on_set_disable_node_scale
+## Disable the ability to rotate the SimpleGrassTextured node
+@export var disable_node_rotation := true : set = _on_set_disable_node_rotation
 @export_group("Optimization")
 @export var optimization_by_distance := false : set = _on_set_optimization_by_distance
 @export var optimization_level := 7.0 : set = _on_set_optimization_level
@@ -154,25 +159,22 @@ func _ready():
 	else:
 		set_process(false)
 	_singleton = get_node("/root/SimpleGrass")
-	if not has_meta("SimpleGrassTextured"):
-		# Update for previous version, 1.0.2 needs vertex color
-		set_meta("SimpleGrassTextured", "1.0.2")
-		_force_update_multimesh = true
-		if multimesh != null:
-			if mesh != null:
-				multimesh.mesh = mesh
-			else:
-				multimesh.mesh = _default_mesh
+	if not has_meta(&"SimpleGrassTextured"):
+		set_meta(&"SimpleGrassTextured", "2.0.5")
 	else:
-		if get_meta("SimpleGrassTextured") == "1.0.2":
+		if get_meta(&"SimpleGrassTextured") == "1.0.2":
 			# New default mesh update tangents
-			set_meta("SimpleGrassTextured", "2.0.3")
+			set_meta(&"SimpleGrassTextured", "2.0.3")
 			_force_update_multimesh = true
 			if multimesh != null:
 				if mesh != null:
 					multimesh.mesh = mesh
 				else:
 					multimesh.mesh = _default_mesh
+		if get_meta(&"SimpleGrassTextured") == "2.0.3":
+			set_meta(&"SimpleGrassTextured", "2.0.5")
+			disable_node_scale = false
+			disable_node_rotation = false
 	if multimesh == null:
 		multimesh = MultiMesh.new()
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
@@ -190,7 +192,18 @@ func _ready():
 	for isur in range(multimesh.mesh.get_surface_count()):
 		if multimesh.mesh.surface_get_material(isur) == null:
 			multimesh.mesh.surface_set_material(isur, _material)
+	set_disable_scale(disable_node_scale)
+	if disable_node_rotation:
+		set_notify_transform(true)
 	update_all_material()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSFORM_CHANGED:
+		if disable_node_rotation and global_rotation != Vector3.ZERO:
+			var prev_scale := scale
+			global_rotation = Vector3.ZERO
+			scale = prev_scale
 
 
 func update_all_material():
@@ -761,6 +774,22 @@ func _on_set_instactive_level_y(value : float):
 	interactive_level_y = value
 	if _material != null:
 		_material.set_shader_parameter("interactive_level_y", interactive_level_y)
+
+
+func _on_set_disable_node_scale(value : bool) -> void:
+	disable_node_scale = value
+	if disable_node_scale:
+		scale = Vector3.ONE
+	set_disable_scale(disable_node_scale)
+
+
+func _on_set_disable_node_rotation(value : bool) -> void:
+	disable_node_rotation = value
+	if disable_node_rotation:
+		var prev_scale := scale
+		global_rotation = Vector3.ZERO
+		scale = prev_scale
+		set_notify_transform(true)
 
 
 func _on_set_optimization_by_distance(value : bool):
