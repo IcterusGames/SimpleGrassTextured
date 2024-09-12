@@ -262,4 +262,3 @@ func _on_timer_debug() -> void:
 	text2 += "\n" + str(_CAM_DIST)
 	_label_names_debug.text = text1
 	_label_datas_debug.text = text2
-

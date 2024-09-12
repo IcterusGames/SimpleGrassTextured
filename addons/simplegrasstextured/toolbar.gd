@@ -92,6 +92,7 @@ func set_plugin(plugin :EditorPlugin) -> void:
 	_shortcut_radius_dec = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/radius_decrement")
 	_shortcut_density_inc = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/density_increment")
 	_shortcut_density_dec = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/density_decrement")
+	_on_theme_changed()
 
 
 func set_current_grass(grass) -> void:
