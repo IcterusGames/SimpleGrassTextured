@@ -76,7 +76,7 @@ func _ready() -> void:
 	_height_cam.size = 50.0
 	_dist_cam.size = 50.0
 	_dist_mesh.mesh.size = Vector2(50.0, 50.0)
-	_dist_view.size = Vector2i(_RESOLUTION, _RESOLUTION)
+	_dist_view.size = Vector2i(int(_RESOLUTION), int(_RESOLUTION))
 	_dist_view.size_2d_override = _dist_view.size
 	_motion1_view.size = _dist_view.size
 	_motion1_view.size_2d_override = _dist_view.size
@@ -171,8 +171,8 @@ func is_interactive() -> bool:
 	return interactive
 
 
-func set_debugger_visible(show : bool) -> void:
-	if show:
+func set_debugger_visible(show_debugger : bool) -> void:
+	if show_debugger:
 		if _gui_debug == null:
 			_gui_debug = VBoxContainer.new()
 			_gui_debug.position = Vector2(10, 10)
