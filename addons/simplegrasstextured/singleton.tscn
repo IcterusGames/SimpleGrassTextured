@@ -46,6 +46,7 @@ shader_parameter/normal_texture = ExtResource("5_3dhao")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bi14c"]
 shader = ExtResource("3_amjfl")
+shader_parameter/delta = 1.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5hmhs"]
 shader = ExtResource("4_5b1gv")

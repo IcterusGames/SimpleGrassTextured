@@ -35,12 +35,14 @@ enum MENU_ID {
 	RECALCULATE_AABB,
 }
 
+var _plugin: EditorPlugin = null
 var _grass_selected = null
 var _tools_menu :PopupMenu = null
 
 
-func set_plugin(_plugin :EditorPlugin) -> void:
+func set_plugin(plugin :EditorPlugin) -> void:
 	var popup := get_popup()
+	_plugin = plugin
 	_tools_menu = PopupMenu.new()
 	_tools_menu.name = &"ToolsMenu"
 	_tools_menu.add_check_item("Follow terrain's normal", MENU_ID.TOOL_FOLLOW_NORMAL)
@@ -50,7 +52,7 @@ func set_plugin(_plugin :EditorPlugin) -> void:
 	popup.add_separator()
 	popup.add_item("Auto center position", MENU_ID.AUTO_CENTER_POSITION)
 	popup.add_item("Recalculate custom AABB", MENU_ID.RECALCULATE_AABB)
-	popup.add_check_item("Bake height map", MENU_ID.BAKE_HEIGHT_MAP)
+	popup.add_item("Bake height map", MENU_ID.BAKE_HEIGHT_MAP)
 	popup.add_check_item("Cast shadow", MENU_ID.CAST_SHADOW)
 	popup.add_item("Global parameters", MENU_ID.GLOBAL_PARAMETERS)
 	popup.add_separator()
@@ -71,7 +73,12 @@ func set_current_grass(grass_selected) -> void:
 		popup.set_item_checked(popup.get_item_index(MENU_ID.CAST_SHADOW), false)
 	else:
 		popup.set_item_checked(popup.get_item_index(MENU_ID.CAST_SHADOW), true)
-	popup.set_item_checked(popup.get_item_index(MENU_ID.BAKE_HEIGHT_MAP), _grass_selected.baked_height_map != null)
+	if _grass_selected.baked_height_map != null:
+		popup.set_item_text(popup.get_item_index(MENU_ID.BAKE_HEIGHT_MAP), "Bake height map (already baked)")
+		popup.set_item_disabled(popup.get_item_index(MENU_ID.BAKE_HEIGHT_MAP), true)
+	else:
+		popup.set_item_text(popup.get_item_index(MENU_ID.BAKE_HEIGHT_MAP), "Bake height map")
+		popup.set_item_disabled(popup.get_item_index(MENU_ID.BAKE_HEIGHT_MAP), false)
 	_tools_menu.set_item_checked(_tools_menu.get_item_index(MENU_ID.TOOL_FOLLOW_NORMAL), _grass_selected.sgt_follow_normal)
 
 
@@ -80,14 +87,30 @@ func _on_sgt_menu_button(id :int) -> void:
 		return
 	match id:
 		MENU_ID.AUTO_CENTER_POSITION:
+			_plugin.get_undo_redo().create_action(_grass_selected.name + " Auto Center Position")
+			_plugin.get_undo_redo().add_undo_property(_grass_selected, &"baked_height_map", _grass_selected.baked_height_map)
+			_plugin.get_undo_redo().add_undo_property(_grass_selected, &"multimesh", _grass_selected.multimesh)
+			_plugin.get_undo_redo().add_undo_property(_grass_selected, &"global_position", _grass_selected.global_position)
 			_grass_selected.auto_center_position()
+			_plugin.get_undo_redo().add_do_property(_grass_selected, &"baked_height_map", _grass_selected.baked_height_map)
+			_plugin.get_undo_redo().add_do_property(_grass_selected, &"multimesh", _grass_selected.multimesh)
+			_plugin.get_undo_redo().add_do_property(_grass_selected, &"global_position", _grass_selected.global_position)
+			_plugin.get_undo_redo().commit_action()
 		MENU_ID.RECALCULATE_AABB:
+			_plugin.get_undo_redo().create_action(_grass_selected.name + " Recalculate Custom AABB")
+			_plugin.get_undo_redo().add_undo_property(_grass_selected, &"custom_aabb", _grass_selected.custom_aabb)
 			_grass_selected.recalculate_custom_aabb()
+			_plugin.get_undo_redo().add_do_property(_grass_selected, &"custom_aabb", _grass_selected.custom_aabb)
+			_plugin.get_undo_redo().commit_action()
 		MENU_ID.CAST_SHADOW:
+			_plugin.get_undo_redo().create_action(_grass_selected.name + " Toogle Cast Shadow")
+			_plugin.get_undo_redo().add_undo_property(_grass_selected, &"cast_shadow", _grass_selected.cast_shadow)
 			if _grass_selected.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF:
 				_grass_selected.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 			else:
 				_grass_selected.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			_plugin.get_undo_redo().add_do_property(_grass_selected, &"cast_shadow", _grass_selected.cast_shadow)
+			_plugin.get_undo_redo().commit_action()
 		MENU_ID.BAKE_HEIGHT_MAP:
 			_grass_selected.bake_height_map()
 		MENU_ID.GLOBAL_PARAMETERS:
@@ -121,4 +144,10 @@ func _on_about_to_popup() -> void:
 func _on_clear_all_confirmation_dialog_confirmed() -> void:
 	if _grass_selected == null:
 		return
+	_plugin.get_undo_redo().create_action(_grass_selected.name + " Clear All Grass")
+	_plugin.get_undo_redo().add_undo_property(_grass_selected, &"baked_height_map", _grass_selected.baked_height_map)
+	_plugin.get_undo_redo().add_undo_property(_grass_selected, &"multimesh", _grass_selected.multimesh)
 	_grass_selected.clear_all()
+	_plugin.get_undo_redo().add_do_property(_grass_selected, &"baked_height_map", _grass_selected.baked_height_map)
+	_plugin.get_undo_redo().add_do_property(_grass_selected, &"multimesh", _grass_selected.multimesh)
+	_plugin.get_undo_redo().commit_action()
