@@ -358,10 +358,23 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			if not (_edit_draw or _edit_fill or _edit_erase):
 				return EditorPlugin.AFTER_GUI_INPUT_PASS
 			if event.pressed:
+				if _edit_draw:
+					get_undo_redo().create_action(_grass_selected.name + " Draw")
+				elif _edit_fill:
+					get_undo_redo().create_action(_grass_selected.name + " Fill")
+				elif _edit_erase:
+					get_undo_redo().create_action(_grass_selected.name + " Erase")
+				else:
+					get_undo_redo().create_action(_grass_selected.name)
+				get_undo_redo().add_undo_property(_grass_selected, &"baked_height_map", _grass_selected.baked_height_map)
+				get_undo_redo().add_undo_property(_grass_selected, &"multimesh", _grass_selected.multimesh)
 				_project_ray_origin = viewport_camera.project_ray_origin(event.position)
 				_project_ray_normal = viewport_camera.project_ray_normal(event.position)
 				_mouse_event = EVENT_MOUSE.EVENT_CLICK
 			else:
+				get_undo_redo().add_do_property(_grass_selected, &"baked_height_map", _grass_selected.baked_height_map)
+				get_undo_redo().add_do_property(_grass_selected, &"multimesh", _grass_selected.multimesh)
+				get_undo_redo().commit_action()
 				_time_draw = 0
 				_object_draw = null
 				_mouse_event = EVENT_MOUSE.EVENT_NONE
