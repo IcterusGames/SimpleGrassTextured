@@ -67,6 +67,9 @@ func _ready() -> void:
 	elif OS.get_name() == "Android" or OS.get_name() == "iOS":
 		_RESOLUTION = 256.0
 	_PIXEL_STEEP = Vector3(50.0 / _RESOLUTION, 50.0 / _RESOLUTION, 50.0 / _RESOLUTION)
+	var using_legacy_renderer = ProjectSettings.get_setting_with_override("rendering/renderer/rendering_method") == "gl_compatibility"
+	RenderingServer.global_shader_parameter_set(&"sgt_legacy_renderer", 1 if using_legacy_renderer else 0)
+	
 	wind_direction = ProjectSettings.get_setting("shader_globals/sgt_wind_direction", {"value":wind_direction}).value
 	wind_strength = ProjectSettings.get_setting("shader_globals/sgt_wind_strength", {"value":wind_strength}).value
 	wind_turbulence = ProjectSettings.get_setting("shader_globals/sgt_wind_turbulence", {"value":wind_turbulence}).value
