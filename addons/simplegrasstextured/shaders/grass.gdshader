@@ -122,7 +122,7 @@ void vertex() {
 	if(dist > 0.0 && interactive_mode) {
 		float node_x = NODE_POSITION_WORLD.x / 50.0;
 		float node_z = NODE_POSITION_WORLD.z / 50.0;
-		vec2 uv_disp = vec2(clamp(0.0, 1.0, (node_x - (sgt_player_position.x - 0.5))), clamp(0.0, 1.0, (node_z - (sgt_player_position.z - 0.5))));
+		vec2 uv_disp = vec2(clamp((node_x - (sgt_player_position.x - 0.5)), 0.0, 1.0), clamp((node_z - (sgt_player_position.z - 0.5)), 0.0, 1.0));
 		vec3 norm_mov = textureLod(sgt_normal_displacement, uv_disp - sgt_player_mov.xz, 0).rgb;
 		float time = get_value(sgt_motion_texture, uv_disp) / 65535.0;
 		norm_mov.xy = (norm_mov.xy * 2.0 - 1.0) * interactive_level_xz * lev;
