@@ -224,6 +224,8 @@ func _enable_plugin():
 func _disable_plugin():
 	_enable_shaders(false)
 	remove_autoload_singleton("SimpleGrass")
+	if ProjectSettings.has_setting("shader_globals/sgt_legacy_renderer"):
+		ProjectSettings.set_setting("shader_globals/sgt_legacy_renderer", null)
 	if ProjectSettings.has_setting("shader_globals/sgt_player_position"):
 		ProjectSettings.set_setting("shader_globals/sgt_player_position", null)
 	if ProjectSettings.has_setting("shader_globals/sgt_player_mov"):
@@ -388,6 +390,15 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 
 
 func _verify_global_shader_parameters():
+	if not ProjectSettings.has_setting("shader_globals/sgt_legacy_renderer"):
+		ProjectSettings.set_setting("shader_globals/sgt_legacy_renderer", {
+			"type": "int",
+			"value": 0
+		})
+		if RenderingServer.global_shader_parameter_get("sgt_legacy_renderer") == null:
+			var using_legacy_renderer = ProjectSettings.get_setting_with_override("rendering/renderer/rendering_method")	== "gl_compatibility"
+			RenderingServer.global_shader_parameter_add("sgt_legacy_renderer", RenderingServer.GLOBAL_VAR_TYPE_INT, 1 if using_legacy_renderer else 0)
+	
 	if not ProjectSettings.has_setting("shader_globals/sgt_player_position"):
 		ProjectSettings.set_setting("shader_globals/sgt_player_position", {
 			"type": "vec3",
