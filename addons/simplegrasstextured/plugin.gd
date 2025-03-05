@@ -469,12 +469,16 @@ func _verify_global_shader_parameters():
 func _enable_shaders(enable :bool) -> void:
 	if enable:
 		var dir := DirAccess.open("res://")
+		var scan := false
 		if dir.file_exists("res://addons/simplegrasstextured/shaders/.gdignore"):
 			dir.remove("res://addons/simplegrasstextured/shaders/.gdignore")
+			scan = true
 		if dir.file_exists("res://addons/simplegrasstextured/materials/.gdignore"):
 			dir.remove("res://addons/simplegrasstextured/materials/.gdignore")
-		var editor = get_editor_interface()
-		editor.get_resource_filesystem().scan.call_deferred()
+			scan = true
+		if scan:
+			var editor = get_editor_interface()
+			editor.get_resource_filesystem().scan.call_deferred()
 	else:
 		var file := FileAccess.open("res://addons/simplegrasstextured/shaders/.gdignore", FileAccess.WRITE)
 		file.close()
