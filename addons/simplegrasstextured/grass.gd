@@ -83,9 +83,9 @@ extends MultiMeshInstance3D
 @export var interactive : bool = true : set = _on_set_interactive
 @export_group("Advanced")
 ## Allows you to define how much the grass will react to objects on axis X and Z
-@export var interactive_level_xz : float = 3.0 : set = _on_set_instactive_level_xz
+@export var interactive_level_xz : float = 3.0 : set = _on_set_interactive_level_xz
 ## Allows you to define how much the grass will react to objects on axis Y
-@export var interactive_level_y : float = 0.3 : set = _on_set_instactive_level_y
+@export var interactive_level_y : float = 0.3 : set = _on_set_interactive_level_y
 ## Locks the scale node of SimpleGrassTextured to 1
 @export var disable_node_scale := true : set = _on_set_disable_node_scale
 ## Disable the ability to rotate the SimpleGrassTextured node
@@ -225,8 +225,8 @@ func update_all_material():
 	_on_set_scale_var(scale_var)
 	_on_set_grass_strength(grass_strength)
 	_on_set_interactive(interactive)
-	_on_set_instactive_level_xz(interactive_level_xz)
-	_on_set_instactive_level_y(interactive_level_y)
+	_on_set_interactive_level_xz(interactive_level_xz)
+	_on_set_interactive_level_y(interactive_level_y)
 	_on_set_optimization_by_distance(optimization_by_distance)
 	_on_set_optimization_level(optimization_level)
 	_on_set_optimization_dist_min(optimization_dist_min)
@@ -764,13 +764,13 @@ func _on_set_interactive(value : bool):
 		_material.set_shader_parameter("interactive_mode", interactive)
 
 
-func _on_set_instactive_level_xz(value : float):
+func _on_set_interactive_level_xz(value : float):
 	interactive_level_xz = value
 	if _material != null:
 		_material.set_shader_parameter("interactive_level_xz", interactive_level_xz)
 
 
-func _on_set_instactive_level_y(value : float):
+func _on_set_interactive_level_y(value : float):
 	interactive_level_y = value
 	if _material != null:
 		_material.set_shader_parameter("interactive_level_y", interactive_level_y)

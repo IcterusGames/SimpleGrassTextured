@@ -12,4 +12,4 @@ _surfaces = [{
 "vertex_count": 8,
 "vertex_data": PackedByteArray("AAAAvwAAgD8AAAAAAAAAPwAAAAAAAAAAAAAAvwAAAAAAAAAAAAAAPwAAgD8AAAAAAAAAAAAAgD8AAAC/AAAAAAAAAAAAAAA/AAAAAAAAAAAAAAC/AAAAAAAAgD8AAAA//3//f////7//f/9/////v/9//3////+//3//f////78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vw==")
 }]
-metadata/GodotVersion = "4.3-stable (official)"
+metadata/GodotVersion = "4.4-stable (official)"

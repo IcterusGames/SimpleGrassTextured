@@ -92,6 +92,8 @@ func _ready() -> void:
 	_blur2_view.size = _dist_view.size
 	_blur2_view.size_2d_override = _dist_view.size
 	if Engine.is_editor_hint():
+		if not get_tree().has_user_signal(&"sgt_globals_params_changed"):
+			get_tree().add_user_signal(&"sgt_globals_params_changed")
 		get_tree().connect(&"sgt_globals_params_changed", _on_globals_params_changed)
 	else:
 		set_interactive(false)
