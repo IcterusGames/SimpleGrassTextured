@@ -81,6 +81,8 @@ func _ready() -> void:
 	_dist_mesh.mesh.size = Vector2(50.0, 50.0)
 	_dist_view.size = Vector2i(int(_RESOLUTION), int(_RESOLUTION))
 	_dist_view.size_2d_override = _dist_view.size
+	_dist_cam.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	_height_cam.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_motion1_view.size = _dist_view.size
 	_motion1_view.size_2d_override = _dist_view.size
 	_motion2_view.size = _dist_view.size
