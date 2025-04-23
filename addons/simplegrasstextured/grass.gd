@@ -621,25 +621,24 @@ func _on_set_light_mode(value : int):
 	light_mode = value
 	if _material == null:
 		return
+	var change_material := false
 	if light_mode == 2:
 		if _material.get_shader().resource_path != "res://addons/simplegrasstextured/shaders/grass_unshaded.gdshader":
 			_material = load("res://addons/simplegrasstextured/materials/grass_unshaded.material").duplicate() as ShaderMaterial
-			update_all_material()
-			return
+			change_material = true
 	else:
 		if _material.get_shader().resource_path != "res://addons/simplegrasstextured/shaders/grass.gdshader":
 			_material = load("res://addons/simplegrasstextured/materials/grass.material").duplicate() as ShaderMaterial
-			update_all_material()
-			return
-	if _material != null:
-		_material.set_shader_parameter("light_mode", light_mode)
+			change_material = true
+	if change_material:
 		if multimesh == null:
 			multimesh = MultiMesh.new()
 			multimesh.mesh = mesh if mesh != null else _default_mesh
 		if multimesh.mesh != null:
 			for isur in range(multimesh.mesh.get_surface_count()):
-				if multimesh.mesh.surface_get_material(isur) == null:
-					multimesh.mesh.surface_set_material(isur, _material)
+				multimesh.mesh.surface_set_material(isur, _material)
+		update_all_material()
+	_material.set_shader_parameter("light_mode", light_mode)
 
 
 func _on_set_texture_normal(value : Texture):
