@@ -44,6 +44,7 @@ extends MultiMeshInstance3D
 ## the grass, recommended for very simple meshes[br][br]
 ## [b]Unshaded[/b][br]No lighting will affect the grass
 @export_enum("Lambert", "Normal grass", "Unshaded") var light_mode := 1 : set = _on_set_light_mode
+@export_enum("Nearest", "Linear", "Nearest mipmap", "Linear mipmap") var texture_filter := 3 : set = _on_set_texture_filter
 @export_subgroup("Normal")
 @export var texture_normal : Texture = null : set = _on_set_texture_normal
 @export_range(-16.0, 16.0) var normal_scale := 1.0 : set = _on_set_normal_scale
@@ -183,8 +184,7 @@ func _ready():
 			multimesh.mesh = mesh
 		else:
 			multimesh.mesh = _default_mesh
-	if light_mode == 2:
-		_material = load("res://addons/simplegrasstextured/materials/grass_unshaded.material").duplicate() as ShaderMaterial
+	_update_material_shader()
 	for isur in range(multimesh.mesh.get_surface_count()):
 		if multimesh.mesh.surface_get_material(isur) != null:
 			_material = multimesh.mesh.surface_get_material(isur)
@@ -403,7 +403,7 @@ func _update_multimesh():
 		multi_new.mesh = mesh
 	else:
 		multi_new.mesh = _default_mesh
-	if _buffer_add.size() > 0 and (sgt_dist_min > 0 or temp_dist_min > 0):
+	if count_prev > 0 and _buffer_add.size() > 0 and (sgt_dist_min > 0 or temp_dist_min > 0):
 		var pos_min := Vector3(10000000, 10000000, 10000000)
 		var pos_max := pos_min * -1
 		for trans in _buffer_add:
@@ -584,6 +584,28 @@ func _update_height_map():
 	_node_height_map.visible = visible
 
 
+func _update_material_shader() -> bool:
+	var shader_name := "grass"
+	if light_mode == 2:
+		shader_name += "_unshaded"
+	# "Nearest" = 0, "Linear" = 1, "Nearest mipmap" = 2, "Linear mipmap" = 3
+	if texture_filter == 0:
+		shader_name += "_nearest"
+	elif texture_filter == 1:
+		shader_name += "_linear"
+	elif texture_filter == 2:
+		shader_name += "_nearest_mipmap"
+	elif texture_filter == 3:
+		shader_name += "" # Linear mipmap is the default filter
+	if _material.get_shader().resource_path != "res://addons/simplegrasstextured/shaders/" + shader_name + ".gdshader":
+		_material.shader = load("res://addons/simplegrasstextured/shaders/" + shader_name + ".gdshader")
+		if _material.get_shader() == null:
+			_material.shader = load("res://addons/simplegrasstextured/shaders/grass.gdshader")
+			_material.shader.take_over_path("res://addons/simplegrasstextured/shaders/" + shader_name + ".gdshader")
+		return true
+	return false
+
+
 func _on_set_mesh(value : Mesh):
 	mesh = value
 	if _material != null:
@@ -621,16 +643,7 @@ func _on_set_light_mode(value : int):
 	light_mode = value
 	if _material == null:
 		return
-	var change_material := false
-	if light_mode == 2:
-		if _material.get_shader().resource_path != "res://addons/simplegrasstextured/shaders/grass_unshaded.gdshader":
-			_material = load("res://addons/simplegrasstextured/materials/grass_unshaded.material").duplicate() as ShaderMaterial
-			change_material = true
-	else:
-		if _material.get_shader().resource_path != "res://addons/simplegrasstextured/shaders/grass.gdshader":
-			_material = load("res://addons/simplegrasstextured/materials/grass.material").duplicate() as ShaderMaterial
-			change_material = true
-	if change_material:
+	if _update_material_shader():
 		if multimesh == null:
 			multimesh = MultiMesh.new()
 			multimesh.mesh = mesh if mesh != null else _default_mesh
@@ -639,6 +652,20 @@ func _on_set_light_mode(value : int):
 				multimesh.mesh.surface_set_material(isur, _material)
 		update_all_material()
 	_material.set_shader_parameter("light_mode", light_mode)
+
+
+func _on_set_texture_filter(value : int) -> void:
+	texture_filter = value
+	if _material == null:
+		return
+	if _update_material_shader():
+		if multimesh == null:
+			multimesh = MultiMesh.new()
+			multimesh.mesh = mesh if mesh != null else _default_mesh
+		if multimesh.mesh != null:
+			for isur in range(multimesh.mesh.get_surface_count()):
+				multimesh.mesh.surface_set_material(isur, _material)
+		update_all_material()
 
 
 func _on_set_texture_normal(value : Texture):

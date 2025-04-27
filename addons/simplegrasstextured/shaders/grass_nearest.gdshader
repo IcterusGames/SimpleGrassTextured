@@ -1,4 +1,4 @@
-/* grass.gdshader
+/* grass_nearest.gdshader
 This file is part of: SimpleGrassTextured
 Copyright (c) 2023 IcterusGames
 
@@ -23,5 +23,5 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
 
 shader_type spatial;
 render_mode blend_mix,depth_draw_opaque,cull_disabled,specular_schlick_ggx,world_vertex_coords;
-#define FILTER_TYPE filter_linear_mipmap
+#define FILTER_TYPE filter_nearest
 #include "grass.gdshaderinc"
