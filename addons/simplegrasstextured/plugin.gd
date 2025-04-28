@@ -40,6 +40,7 @@ var _normal_draw := Vector3.ZERO
 var _object_draw : Object = null
 var _edit_density := 25
 var _edit_radius := 2.0
+var _edit_slope := Vector2(0, 45)
 var _edit_scale := Vector3.ONE
 var _edit_rotation := 0.0
 var _edit_rotation_rand := 1.0
@@ -136,7 +137,7 @@ var _custom_settings := [{
 ]
 
 
-func _enter_tree():
+func _enter_tree() -> void:
 	if not get_tree().has_user_signal(&"sgt_globals_params_changed"):
 		get_tree().add_user_signal(&"sgt_globals_params_changed")
 	_verify_global_shader_parameters()
@@ -165,12 +166,12 @@ func _enter_tree():
 		load("res://addons/simplegrasstextured/sgt_icon.svg")
 	)
 	
-	_gui_toolbar = load("res://addons/simplegrasstextured/toolbar.tscn").instantiate()
+	_gui_toolbar = load("res://addons/simplegrasstextured/gui/toolbar.tscn").instantiate()
 	_gui_toolbar.visible = false
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_BOTTOM, _gui_toolbar)
 	_gui_toolbar.set_plugin(self)
 	
-	_gui_toolbar_up = load("res://addons/simplegrasstextured/toolbar_up.tscn").instantiate()
+	_gui_toolbar_up = load("res://addons/simplegrasstextured/gui/toolbar_up.tscn").instantiate()
 	_gui_toolbar_up.visible = false
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, _gui_toolbar_up)
 	_gui_toolbar_up.set_plugin(self)
@@ -193,6 +194,7 @@ func _enter_tree():
 	_gui_toolbar.button_draw.toggled.connect(_on_button_draw_toggled)
 	_gui_toolbar.button_fill.toggled.connect(_on_button_fill_toggled)
 	_gui_toolbar.button_erase.toggled.connect(_on_button_erase_toggled)
+	_gui_toolbar.edit_slope_range.value_changed.connect(_on_edit_slope_range_changed)
 	_gui_toolbar.edit_scale.value_changed.connect(_on_edit_scale_value_changed)
 	_gui_toolbar.edit_rotation.value_changed.connect(_on_edit_rotation_value_changed)
 	_gui_toolbar.edit_rotation_rand.value_changed.connect(_on_edit_rotation_rand_value_changed)
@@ -200,7 +202,7 @@ func _enter_tree():
 	self._edit_draw = true
 
 
-func _exit_tree():
+func _exit_tree() -> void:
 	var current_config := _custom_config_memorize()
 	if current_config != _prev_config:
 		# Force save settings if some shortcut has been changed
@@ -217,11 +219,11 @@ func _exit_tree():
 		remove_inspector_plugin(_inspector_plugin)
 
 
-func _enable_plugin():
+func _enable_plugin() -> void:
 	_verify_global_shader_parameters()
 
 
-func _disable_plugin():
+func _disable_plugin() -> void:
 	_enable_shaders(false)
 	remove_autoload_singleton("SimpleGrass")
 	if ProjectSettings.has_setting("shader_globals/sgt_legacy_renderer"):
@@ -273,12 +275,12 @@ func _handles(object) -> bool:
 	return false
 
 
-func _edit(object):
+func _edit(object) -> void:
 	_grass_selected = object
 	_update_gui()
 
 
-func _make_visible(visible : bool):
+func _make_visible(visible : bool) -> void:
 	if visible:
 		if _grass_selected != null:
 			_update_gui()
@@ -293,7 +295,7 @@ func _make_visible(visible : bool):
 		_gui_toolbar_up.set_current_grass(null)
 
 
-func _physics_process(_delta):
+func _physics_process(_delta) -> void:
 	if _mouse_event == EVENT_MOUSE.EVENT_CLICK:
 		_raycast_3d.global_transform.origin = _project_ray_origin
 		_raycast_3d.global_transform.basis.y = _project_ray_normal
@@ -389,7 +391,7 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	return EditorPlugin.AFTER_GUI_INPUT_PASS
 
 
-func _verify_global_shader_parameters():
+func _verify_global_shader_parameters() -> void:
 	if not ProjectSettings.has_setting("shader_globals/sgt_legacy_renderer"):
 		ProjectSettings.set_setting("shader_globals/sgt_legacy_renderer", {
 			"type": "int",
@@ -525,7 +527,7 @@ func _init_default_project_settings() -> void:
 			ProjectSettings.call(&"set_as_basic", entry["name"], entry["basic"])
 
 
-func _update_gui():
+func _update_gui() -> void:
 	if _grass_selected != null:
 		_gui_toolbar.slider_radius.value = _grass_selected.sgt_radius
 		_gui_toolbar.slider_density.value = _grass_selected.sgt_density
@@ -533,6 +535,7 @@ func _update_gui():
 		_gui_toolbar.edit_rotation.value = _grass_selected.sgt_rotation
 		_gui_toolbar.edit_rotation_rand.value = _grass_selected.sgt_rotation_rand
 		_gui_toolbar.edit_distance.value = _grass_selected.sgt_dist_min
+		_gui_toolbar.edit_slope_range.set_value(_grass_selected.sgt_slope.x, _grass_selected.sgt_slope.y)
 		_gui_toolbar.set_current_grass(_grass_selected)
 		_gui_toolbar_up.set_current_grass(_grass_selected)
 		if _grass_selected.multimesh != null:
@@ -544,7 +547,7 @@ func _on_project_settings_changed() -> void:
 	_prev_config = _custom_config_memorize()
 
 
-func _on_button_draw_toggled(pressed : bool):
+func _on_button_draw_toggled(pressed : bool) -> void:
 	_edit_draw = pressed
 	if _edit_draw:
 		self._edit_fill = false
@@ -555,7 +558,7 @@ func _on_button_draw_toggled(pressed : bool):
 		_decal_pointer.visible = false
 
 
-func _on_button_fill_toggled(pressed : bool):
+func _on_button_fill_toggled(pressed : bool) -> void:
 	_edit_fill = pressed
 	if _edit_fill:
 		self._edit_draw = false
@@ -566,7 +569,7 @@ func _on_button_fill_toggled(pressed : bool):
 		_decal_pointer.visible = false
 
 
-func _on_button_erase_toggled(pressed : bool):
+func _on_button_erase_toggled(pressed : bool) -> void:
 	_edit_erase = pressed
 	if _edit_erase:
 		self._edit_draw = false
@@ -577,43 +580,49 @@ func _on_button_erase_toggled(pressed : bool):
 		_decal_pointer.visible = false
 
 
-func _on_slider_radius_value_changed(value : float):
+func _on_slider_radius_value_changed(value : float) -> void:
 	_edit_radius = value
 	_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
 	if _grass_selected != null:
 		_grass_selected.sgt_radius = value
 
 
-func _on_slider_density_value_changed(value : float):
+func _on_slider_density_value_changed(value : float) -> void:
 	_edit_density = value
 	if _grass_selected != null:
 		_grass_selected.sgt_density = value
 
 
-func _on_edit_scale_value_changed(value : float):
+func _on_edit_slope_range_changed(value_min: float, value_max: float) -> void:
+	_edit_slope = Vector2(value_min, value_max)
+	if _grass_selected != null:
+		_grass_selected.sgt_slope = _edit_slope
+
+
+func _on_edit_scale_value_changed(value : float) -> void:
 	_edit_scale = Vector3(value, value, value)
 	if _grass_selected != null:
 		_grass_selected.sgt_scale = value
 
 
-func _on_edit_rotation_value_changed(value : float):
+func _on_edit_rotation_value_changed(value : float) -> void:
 	_edit_rotation = value
 	if _grass_selected != null:
 		_grass_selected.sgt_rotation = value
 
 
-func _on_edit_rotation_rand_value_changed(value : float):
+func _on_edit_rotation_rand_value_changed(value : float) -> void:
 	_edit_rotation_rand = value
 	if _grass_selected != null:
 		_grass_selected.sgt_rotation_rand = value
 
 
-func _on_edit_distance_value_changed(value : float):
+func _on_edit_distance_value_changed(value : float) -> void:
 	if _grass_selected != null:
 		_grass_selected.sgt_dist_min = value
 
 
-func _on_set_draw(value : bool):
+func _on_set_draw(value : bool) -> void:
 	_edit_draw = value
 	if _edit_draw:
 		_decal_pointer.modulate = Color.WHITE
@@ -622,7 +631,7 @@ func _on_set_draw(value : bool):
 	_gui_toolbar.button_draw.button_pressed = _edit_draw
 
 
-func _on_set_fill(value : bool):
+func _on_set_fill(value : bool) -> void:
 	_edit_fill = value
 	if _edit_fill:
 		_decal_pointer.modulate = Color.YELLOW
@@ -631,7 +640,7 @@ func _on_set_fill(value : bool):
 	_gui_toolbar.button_fill.button_pressed = _edit_fill
 
 
-func _on_set_erase(value : bool):
+func _on_set_erase(value : bool) -> void:
 	_edit_erase = value
 	if _edit_erase:
 		_decal_pointer.modulate = Color.RED
@@ -640,13 +649,14 @@ func _on_set_erase(value : bool):
 	_gui_toolbar.button_erase.button_pressed = _edit_erase
 
 
-func _eval_brush():
+func _eval_brush() -> void:
 	if _grass_selected == null:
 		return
 	if _edit_fill:
 		var steep : float = _grass_selected.sgt_dist_min
 		var list_trans := []
 		var follow_normal : bool = _grass_selected.sgt_follow_normal
+		var slope := Vector2(deg_to_rad(_grass_selected.sgt_slope.x), deg_to_rad(_grass_selected.sgt_slope.y))
 		if steep < 0.05:
 			steep = 0.4
 		_grass_selected.temp_dist_min = steep
@@ -668,9 +678,12 @@ func _eval_brush():
 					z += steep
 					continue
 				if _raycast_3d.is_colliding() and _raycast_3d.get_collider() == _object_draw:
-					var normal := Vector3.UP
-					if follow_normal:
-						normal = _raycast_3d.get_collision_normal()
+					var normal := _raycast_3d.get_collision_normal()
+					if normal.angle_to(Vector3.UP) < slope.x or normal.angle_to(Vector3.UP) > slope.y:
+						z += steep
+						continue
+					if not follow_normal:
+						normal = Vector3.UP
 					list_trans.append(_grass_selected.eval_grass_transform(
 						_raycast_3d.get_collision_point() - _grass_selected.global_position,
 						normal,
@@ -682,6 +695,7 @@ func _eval_brush():
 		_grass_selected.add_grass_batch(list_trans)
 	elif _edit_draw:
 		var follow_normal : bool = _grass_selected.sgt_follow_normal
+		var slope := Vector2(deg_to_rad(_grass_selected.sgt_slope.x), deg_to_rad(_grass_selected.sgt_slope.y))
 		for i in _edit_density:
 			var variation = Vector3.RIGHT * _edit_radius * randf()
 			variation = variation.rotated(Vector3.UP, randf() * TAU)
@@ -694,9 +708,11 @@ func _eval_brush():
 			_raycast_3d.collision_mask = _grass_selected.collision_mask
 			_raycast_3d.force_raycast_update()
 			if _raycast_3d.is_colliding() and _raycast_3d.get_collider() == _object_draw:
-				var normal := Vector3.UP
-				if follow_normal:
-					normal = _raycast_3d.get_collision_normal()
+				var normal := _raycast_3d.get_collision_normal()
+				if normal.angle_to(Vector3.UP) < slope.x or normal.angle_to(Vector3.UP) > slope.y:
+					continue
+				if not follow_normal:
+					normal = Vector3.UP
 				_grass_selected.add_grass(
 					_raycast_3d.get_collision_point() - _grass_selected.global_position,
 					normal,

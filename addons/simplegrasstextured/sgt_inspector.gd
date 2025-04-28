@@ -50,6 +50,6 @@ func _parse_category(object: Object, category: String):
 
 
 func _on_button_about_pressed(button :Button):
-	var win = load("res://addons/simplegrasstextured/about.tscn").instantiate()
+	var win = load("res://addons/simplegrasstextured/gui/about.tscn").instantiate()
 	button.get_window().add_child(win)
 	win.popup_centered()

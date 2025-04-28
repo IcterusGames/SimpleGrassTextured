@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://cb8klhv6nwvtl"]
 
-[ext_resource type="Script" path="res://addons/simplegrasstextured/about.gd" id="1_r23hh"]
+[ext_resource type="Script" uid="uid://cu72rjuvdnnx" path="res://addons/simplegrasstextured/gui/about.gd" id="1_r23hh"]
 [ext_resource type="Material" uid="uid://cl74usvfymgvs" path="res://addons/simplegrasstextured/materials/icon.material" id="2_4glo1"]
 [ext_resource type="Texture2D" uid="uid://cubr1a55brlfp" path="res://addons/simplegrasstextured/sgt_icon_48.svg" id="3_7w1su"]
 

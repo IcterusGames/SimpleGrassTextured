@@ -42,6 +42,7 @@ var _shortcut_density_dec := Shortcut.new()
 @onready var button_density :Button = %IconDensity
 @onready var slider_radius :HSlider = $HSliderRadius
 @onready var slider_density :HSlider = $HSliderDensity
+@onready var edit_slope_range: Control = %SlopeRange
 @onready var edit_scale :EditorSpinSlider
 @onready var edit_rotation :EditorSpinSlider
 @onready var edit_rotation_rand :EditorSpinSlider
@@ -144,16 +145,31 @@ func _on_theme_changed() -> void:
 	%IconRadius.modulate = get_theme_color(&"font_color", &"Label")
 	%IconDensity.modulate = get_theme_color(&"font_color", &"Label")
 	%IconDistance.modulate = get_theme_color(&"font_color", &"Label")
+	%IconSlope.modulate = get_theme_color(&"font_color", &"Label")
 	if _button_more != null:
 		_button_more.icon = get_theme_icon(&"GuiTabMenuHl", &"EditorIcons")
+	# Test that the icons size matches with editor UI scale
+	var _ed_scale := 1.0
+	var es: int = EditorInterface.get_editor_settings().get_setting("interface/editor/display_scale")
+	if es == 7:
+		_ed_scale = EditorInterface.get_editor_settings().get_setting("interface/editor/custom_display_scale")
+	else:
+		_ed_scale = [1.0, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0][clamp(es, 0, 6)]
+	if load("res://addons/simplegrasstextured/images/sgt_icon_density.svg").get_width() != roundi(16 * _ed_scale):
+		$TimerReimportIcons.start()
 
 
 func _on_panel_container_gui_input(event) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			var win = load("res://addons/simplegrasstextured/about.tscn").instantiate()
+			var win = load("res://addons/simplegrasstextured/gui/about.tscn").instantiate()
 			get_window().add_child(win)
 			win.popup_centered()
+
+
+func _on_icon_slope_pressed() -> void:
+	edit_slope_range.set_value_min(0)
+	edit_slope_range.set_value_max(45)
 
 
 func _on_icon_scale_pressed() -> void:
@@ -178,3 +194,17 @@ func _on_icon_radius_pressed() -> void:
 
 func _on_icon_radius_2_pressed() -> void:
 	slider_density.value = DEFAULT_DENSITY
+
+
+func _on_timer_reimport_icons_timeout() -> void:
+	if EditorInterface.get_resource_filesystem().is_scanning():
+		return
+	$TimerReimportIcons.stop()
+	EditorInterface.get_resource_filesystem().reimport_files([
+	"res://addons/simplegrasstextured/sgt_icon.svg",
+	"res://addons/simplegrasstextured/sgt_icon_48.svg",
+	"res://addons/simplegrasstextured/images/sgt_icon_density.svg",
+	"res://addons/simplegrasstextured/images/sgt_icon_distance.svg",
+	"res://addons/simplegrasstextured/images/sgt_icon_radius.svg",
+	"res://addons/simplegrasstextured/images/sgt_icon_slope.svg"
+	])

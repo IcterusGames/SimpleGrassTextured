@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c1242d1bef7lb"]
 
-[ext_resource type="Script" path="res://addons/simplegrasstextured/clear_all_confirmation_dialog.gd" id="1_xk6u2"]
+[ext_resource type="Script" uid="uid://wckg68rm05vd" path="res://addons/simplegrasstextured/gui/clear_all_confirmation_dialog.gd" id="1_xk6u2"]
 
 [node name="ClearAllConfirmationDialog" type="ConfirmationDialog"]
 size = Vector2i(377, 109)

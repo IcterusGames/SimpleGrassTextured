@@ -26,6 +26,7 @@ extends MenuButton
 
 enum MENU_ID {
 	TOOL_FOLLOW_NORMAL,
+	TOOL_FILL_TERRAIN,
 	AUTO_CENTER_POSITION,
 	CAST_SHADOW,
 	BAKE_HEIGHT_MAP,
@@ -46,6 +47,7 @@ func set_plugin(plugin :EditorPlugin) -> void:
 	_tools_menu = PopupMenu.new()
 	_tools_menu.name = &"ToolsMenu"
 	_tools_menu.add_check_item("Follow terrain's normal", MENU_ID.TOOL_FOLLOW_NORMAL)
+	_tools_menu.add_item("Fill terrain", MENU_ID.TOOL_FILL_TERRAIN)
 	popup.add_child(_tools_menu)
 	popup.clear()
 	popup.add_submenu_item("Tools", "ToolsMenu")
@@ -105,25 +107,32 @@ func _on_sgt_menu_button(id :int) -> void:
 		MENU_ID.CAST_SHADOW:
 			_plugin.get_undo_redo().create_action(_grass_selected.name + " Toogle Cast Shadow")
 			_plugin.get_undo_redo().add_undo_property(_grass_selected, &"cast_shadow", _grass_selected.cast_shadow)
+			for child in _grass_selected.get_children():
+				if child.has_meta(&"SimpleGrassTexturedRegion"):
+					_plugin.get_undo_redo().add_undo_property(child, &"cast_shadow", child.cast_shadow)
 			if _grass_selected.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF:
 				_grass_selected.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 			else:
 				_grass_selected.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			_plugin.get_undo_redo().add_do_property(_grass_selected, &"cast_shadow", _grass_selected.cast_shadow)
+			for child in _grass_selected.get_children():
+				if child.has_meta(&"SimpleGrassTexturedRegion"):
+					child.cast_shadow = _grass_selected.cast_shadow
+					_plugin.get_undo_redo().add_do_property(child, &"cast_shadow", child.cast_shadow)
 			_plugin.get_undo_redo().commit_action()
 		MENU_ID.BAKE_HEIGHT_MAP:
 			_grass_selected.bake_height_map()
 		MENU_ID.GLOBAL_PARAMETERS:
-			var _global_parameters = load("res://addons/simplegrasstextured/global_parameters.tscn").instantiate()
+			var _global_parameters = load("res://addons/simplegrasstextured/gui/global_parameters.tscn").instantiate()
 			get_window().add_child(_global_parameters)
 			_global_parameters.popup_centered()
 		MENU_ID.CLEAR_ALL:
-			var win = load("res://addons/simplegrasstextured/clear_all_confirmation_dialog.tscn").instantiate()
+			var win = load("res://addons/simplegrasstextured/gui/clear_all_confirmation_dialog.tscn").instantiate()
 			get_window().add_child(win)
 			win.confirmed.connect(_on_clear_all_confirmation_dialog_confirmed)
 			win.popup_centered()
 		MENU_ID.HELP_ABOUT:
-			var win = load("res://addons/simplegrasstextured/about.tscn").instantiate()
+			var win = load("res://addons/simplegrasstextured/gui/about.tscn").instantiate()
 			get_window().add_child(win)
 			win.popup_centered()
 
@@ -135,6 +144,8 @@ func _on_sgt_tools_menu_button(id :int) -> void:
 		MENU_ID.TOOL_FOLLOW_NORMAL:
 			_tools_menu.set_item_checked(id, not _tools_menu.is_item_checked(id))
 			_grass_selected.sgt_follow_normal = _tools_menu.is_item_checked(id)
+		MENU_ID.TOOL_FILL_TERRAIN:
+			_plugin.tool_fill_terrain()
 
 
 func _on_about_to_popup() -> void:

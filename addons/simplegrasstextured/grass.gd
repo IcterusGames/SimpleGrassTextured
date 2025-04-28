@@ -113,6 +113,7 @@ var sgt_rotation := 0.0
 var sgt_rotation_rand := 1.0
 var sgt_dist_min := 0.25
 var sgt_follow_normal := false
+var sgt_slope := Vector2(0, 45)
 
 var temp_dist_min := 0.0
 

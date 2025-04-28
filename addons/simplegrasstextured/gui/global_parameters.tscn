@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bbbcb5o176677"]
 
-[ext_resource type="Script" path="res://addons/simplegrasstextured/global_parameters.gd" id="1_f1c1a"]
+[ext_resource type="Script" uid="uid://b1ddeyowx86m3" path="res://addons/simplegrasstextured/gui/global_parameters.gd" id="1_f1c1a"]
 
 [node name="SimpleGrassTexturedGlobalParameters" type="AcceptDialog"]
 title = "Simple Grass Texture: Global Parameters"

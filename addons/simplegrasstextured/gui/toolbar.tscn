@@ -1,12 +1,14 @@
-[gd_scene load_steps=10 format=3 uid="uid://dsim5cbhc6kwm"]
+[gd_scene load_steps=12 format=3 uid="uid://dsim5cbhc6kwm"]
 
-[ext_resource type="Script" path="res://addons/simplegrasstextured/toolbar.gd" id="1_aa1o6"]
+[ext_resource type="Script" uid="uid://usxgr64t746m" path="res://addons/simplegrasstextured/gui/toolbar.gd" id="1_aa1o6"]
 [ext_resource type="Material" uid="uid://cl74usvfymgvs" path="res://addons/simplegrasstextured/materials/icon.material" id="2_p7k4b"]
 [ext_resource type="Texture2D" uid="uid://bsmcpupaj02v8" path="res://addons/simplegrasstextured/sgt_icon.svg" id="3_tl64l"]
-[ext_resource type="PackedScene" uid="uid://der2mmxtog2mt" path="res://addons/simplegrasstextured/toolbar_menu.tscn" id="4_1u4kn"]
+[ext_resource type="PackedScene" uid="uid://der2mmxtog2mt" path="res://addons/simplegrasstextured/gui/toolbar_menu.tscn" id="4_1u4kn"]
 [ext_resource type="Texture2D" uid="uid://clm6vd2es8xm7" path="res://addons/simplegrasstextured/images/sgt_icon_radius.svg" id="5_55kgh"]
 [ext_resource type="Texture2D" uid="uid://tqiak77omdnr" path="res://addons/simplegrasstextured/images/sgt_icon_density.svg" id="6_wboky"]
+[ext_resource type="Texture2D" uid="uid://24avwtyvf01r" path="res://addons/simplegrasstextured/images/sgt_icon_slope.svg" id="7_4wrj3"]
 [ext_resource type="Texture2D" uid="uid://d28dlfkm62t6e" path="res://addons/simplegrasstextured/images/sgt_icon_distance.svg" id="7_ao3h0"]
+[ext_resource type="PackedScene" uid="uid://r30ih7dtx1uo" path="res://addons/simplegrasstextured/gui/domain_range.tscn" id="8_y7yf0"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6mh15"]
 
@@ -50,10 +52,10 @@ stretch_mode = 3
 
 [node name="LabelVersion" type="Label" parent="PanelContainer"]
 unique_name_in_owner = true
+auto_translate_mode = 2
 clip_contents = true
 layout_mode = 2
 size_flags_vertical = 1
-auto_translate = false
 localize_numeral_system = false
 theme_override_font_sizes/font_size = 7
 theme_override_styles/normal = SubResource("StyleBoxEmpty_hc7jq")
@@ -157,6 +159,22 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
+[node name="SlopeCont" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="IconSlope" type="Button" parent="SlopeCont"]
+unique_name_in_owner = true
+texture_filter = 1
+layout_mode = 2
+tooltip_text = "Slope"
+icon = ExtResource("7_4wrj3")
+flat = true
+
+[node name="SlopeRange" parent="SlopeCont" instance=ExtResource("8_y7yf0")]
+unique_name_in_owner = true
+layout_mode = 2
+
 [node name="ScaleCont" type="HBoxContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
@@ -221,12 +239,16 @@ text = "Count: 0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
+[node name="TimerReimportIcons" type="Timer" parent="."]
+
 [connection signal="gui_input" from="PanelContainer" to="." method="_on_panel_container_gui_input"]
 [connection signal="pressed" from="IconRadius" to="." method="_on_icon_radius_pressed"]
 [connection signal="value_changed" from="HSliderRadius" to="." method="_on_h_slider_radius_value_changed"]
 [connection signal="pressed" from="IconDensity" to="." method="_on_icon_radius_2_pressed"]
 [connection signal="value_changed" from="HSliderDensity" to="." method="_on_h_slider_density_value_changed"]
+[connection signal="pressed" from="SlopeCont/IconSlope" to="." method="_on_icon_slope_pressed"]
 [connection signal="pressed" from="ScaleCont/IconScale" to="." method="_on_icon_scale_pressed"]
 [connection signal="pressed" from="RotationCont/IconRotation" to="." method="_on_icon_rotation_pressed"]
 [connection signal="pressed" from="RotationRandCont/IconRotationRand" to="." method="_on_icon_rotation_rand_pressed"]
 [connection signal="pressed" from="DistanceCont/IconDistance" to="." method="_on_icon_distance_pressed"]
+[connection signal="timeout" from="TimerReimportIcons" to="." method="_on_timer_reimport_icons_timeout"]
