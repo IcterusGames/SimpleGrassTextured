@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://cb8klhv6nwvtl"]
+[gd_scene load_steps=7 format=3 uid="uid://cb8klhv6nwvtl"]
 
 [ext_resource type="Script" uid="uid://cu72rjuvdnnx" path="res://addons/simplegrasstextured/gui/about.gd" id="1_r23hh"]
 [ext_resource type="Material" uid="uid://cl74usvfymgvs" path="res://addons/simplegrasstextured/materials/icon.material" id="2_4glo1"]
@@ -8,10 +8,18 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lwftf"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5fhmg"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+draw_center = false
+
 [node name="SimpleGrassTexturedHelpAbout" type="AcceptDialog"]
 title = "About"
 position = Vector2i(0, 36)
-size = Vector2i(520, 240)
+size = Vector2i(644, 475)
+visible = true
 min_size = Vector2i(520, 200)
 max_size = Vector2i(1280, 720)
 script = ExtResource("1_r23hh")
@@ -19,19 +27,13 @@ message = "Simple Grass Textured Plugin
 v. {_version_num}
 by IcterusGames
 [font_size=7] [/font_size]
-[b]Support me on:[/b]
-[indent][url]https://icterusgames.itch.io/[/url][/indent]
-[indent][url]https://www.patreon.com/IcterusGames[/url][/indent]
-[font_size=7] [/font_size]
-[b]Source code on:[/b]
-[indent][url]https://github.com/IcterusGames/SimpleGrassTextured[/url][/indent]
-"
+[b]Support me on:[/b]"
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 512.0
-offset_bottom = 191.0
+offset_right = 636.0
+offset_bottom = 426.0
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
@@ -48,25 +50,138 @@ layout_mode = 2
 texture = ExtResource("3_7w1su")
 stretch_mode = 4
 
-[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/focus = SubResource("StyleBoxEmpty_hnw4u")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_lwftf")
 bbcode_enabled = true
 text = "Simple Grass Textured Plugin
-v. 2.0.5
+v. 2.0.8
 by IcterusGames
 [font_size=7] [/font_size]
-[b]Support me on:[/b]
-[indent][url]https://icterusgames.itch.io/[/url][/indent]
-[indent][url]https://www.patreon.com/IcterusGames[/url][/indent]
-[font_size=7] [/font_size]
-[b]Source code on:[/b]
-[indent][url]https://github.com/IcterusGames/SimpleGrassTextured[/url][/indent]
-"
+[b]Support me on:[/b]"
+fit_content = true
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 15
+
+[node name="ItchButton" type="Button" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="ItchContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer/MarginContainer/ItchContainer"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_5fhmg")
+bbcode_enabled = true
+text = "[b]Itch.io[/b]
+[url]https://icterusgames.itch.io[url]"
+fit_content = true
+
+[node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 15
+
+[node name="PatreonButton" type="Button" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer2"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="PatreonContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer2/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer2/MarginContainer/PatreonContainer"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_5fhmg")
+bbcode_enabled = true
+text = "[b]Patreon[/b]
+[url]https://www.patreon.com/IcterusGames[/url]"
+fit_content = true
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="MarginContainer/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/focus = SubResource("StyleBoxEmpty_hnw4u")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lwftf")
+bbcode_enabled = true
+text = "[font_size=7] [/font_size]
+[b]Source code on:[/b]"
+fit_content = true
+
+[node name="MarginContainer3" type="MarginContainer" parent="MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 15
+
+[node name="GithubButton" type="Button" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer3"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="GithubContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer3/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer3/MarginContainer/GithubContainer"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_5fhmg")
+bbcode_enabled = true
+text = "[b]Github[/b]
+[url]https://github.com/IcterusGames/SimpleGrassTextured[/url]"
+fit_content = true
 
 [connection signal="canceled" from="." to="." method="_on_canceled"]
 [connection signal="confirmed" from="." to="." method="_on_confirmed"]
-[connection signal="meta_clicked" from="MarginContainer/HBoxContainer/RichTextLabel" to="." method="_on_rich_text_label_meta_clicked"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer/ItchButton" to="." method="_on_itch_button_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer2/PatreonButton" to="." method="_on_patreon_button_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/VBoxContainer/MarginContainer3/GithubButton" to="." method="_on_github_button_pressed"]

@@ -1,10 +1,13 @@
-[gd_scene load_steps=12 format=3 uid="uid://dsim5cbhc6kwm"]
+[gd_scene load_steps=15 format=3 uid="uid://dsim5cbhc6kwm"]
 
 [ext_resource type="Script" uid="uid://usxgr64t746m" path="res://addons/simplegrasstextured/gui/toolbar.gd" id="1_aa1o6"]
 [ext_resource type="Material" uid="uid://cl74usvfymgvs" path="res://addons/simplegrasstextured/materials/icon.material" id="2_p7k4b"]
 [ext_resource type="Texture2D" uid="uid://bsmcpupaj02v8" path="res://addons/simplegrasstextured/sgt_icon.svg" id="3_tl64l"]
 [ext_resource type="PackedScene" uid="uid://der2mmxtog2mt" path="res://addons/simplegrasstextured/gui/toolbar_menu.tscn" id="4_1u4kn"]
+[ext_resource type="Texture2D" uid="uid://c2kunxv5wepih" path="res://addons/simplegrasstextured/images/sgt_icon_airbrush.svg" id="4_weijg"]
 [ext_resource type="Texture2D" uid="uid://clm6vd2es8xm7" path="res://addons/simplegrasstextured/images/sgt_icon_radius.svg" id="5_55kgh"]
+[ext_resource type="Texture2D" uid="uid://dtal42g10x1ay" path="res://addons/simplegrasstextured/images/sgt_icon_pen.svg" id="5_itpep"]
+[ext_resource type="Texture2D" uid="uid://brugf6rnck1tk" path="res://addons/simplegrasstextured/images/sgt_icon_eraser.svg" id="6_jg7h4"]
 [ext_resource type="Texture2D" uid="uid://tqiak77omdnr" path="res://addons/simplegrasstextured/images/sgt_icon_density.svg" id="6_wboky"]
 [ext_resource type="Texture2D" uid="uid://24avwtyvf01r" path="res://addons/simplegrasstextured/images/sgt_icon_slope.svg" id="7_4wrj3"]
 [ext_resource type="Texture2D" uid="uid://d28dlfkm62t6e" path="res://addons/simplegrasstextured/images/sgt_icon_distance.svg" id="7_ao3h0"]
@@ -20,10 +23,6 @@ anchor_right = 1.0
 offset_bottom = 31.0
 grow_horizontal = 2
 script = ExtResource("1_aa1o6")
-
-[node name="VSeparator" type="VSeparator" parent="."]
-visible = false
-layout_mode = 2
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 custom_minimum_size = Vector2(24, 0)
@@ -63,26 +62,32 @@ text = "2.0.5"
 horizontal_alignment = 1
 vertical_alignment = 2
 
-[node name="ButtonDraw" type="Button" parent="."]
+[node name="VSeparator" type="VSeparator" parent="."]
 layout_mode = 2
-tooltip_text = "Draw"
-toggle_mode = true
-text = "Draw"
-flat = true
 
-[node name="ButtonFill" type="Button" parent="."]
+[node name="ButtonAirbrush" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Fill"
+tooltip_text = "Airdraw tool"
+theme_type_variation = &"FlatButton"
 toggle_mode = true
-text = "Fill"
-flat = true
+icon = ExtResource("4_weijg")
+
+[node name="ButtonPencil" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Pencil tool"
+theme_type_variation = &"FlatButton"
+toggle_mode = true
+icon = ExtResource("5_itpep")
 
 [node name="ButtonEraser" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Erase"
+tooltip_text = "Eraser tool"
+theme_type_variation = &"FlatButton"
 toggle_mode = true
-text = "Erase"
-flat = true
+icon = ExtResource("6_jg7h4")
 
 [node name="ButtonMore" parent="." instance=ExtResource("4_1u4kn")]
 unique_name_in_owner = true
@@ -174,6 +179,10 @@ flat = true
 [node name="SlopeRange" parent="SlopeCont" instance=ExtResource("8_y7yf0")]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Slope to avoid:
+Min: 0°
+Max: 45°
+"
 
 [node name="ScaleCont" type="HBoxContainer" parent="."]
 unique_name_in_owner = true

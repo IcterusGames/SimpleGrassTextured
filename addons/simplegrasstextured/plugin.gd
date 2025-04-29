@@ -32,6 +32,13 @@ enum EVENT_MOUSE {
 	EVENT_CLICK,
 }
 
+enum TOOL {
+	NONE,
+	PENCIL,
+	AIRBRUSH,
+	ERASER
+}
+
 var _raycast_3d : RayCast3D = null
 var _decal_pointer : Decal = null
 var _grass_selected = null
@@ -44,9 +51,7 @@ var _edit_slope := Vector2(0, 45)
 var _edit_scale := Vector3.ONE
 var _edit_rotation := 0.0
 var _edit_rotation_rand := 1.0
-var _edit_draw := true : set = _on_set_draw
-var _edit_fill := false : set = _on_set_fill
-var _edit_erase := false : set = _on_set_erase
+var _edit_tool: TOOL = TOOL.AIRBRUSH : set = _on_set_tool
 var _gui_toolbar = null
 var _gui_toolbar_up = null
 var _time_draw := 0
@@ -55,6 +60,7 @@ var _mouse_event := EVENT_MOUSE.EVENT_NONE
 var _project_ray_origin := Vector3.INF
 var _project_ray_normal := Vector3.INF
 var _inspector_plugin : EditorInspectorPlugin = null
+var _evaluate_draw_time: int = 100
 var _prev_config := ""
 var _custom_settings := [{
 		"name": "SimpleGrassTextured/General/default_terrain_physics_layer",
@@ -63,6 +69,13 @@ var _custom_settings := [{
 		"hint_string": "",
 		"default": pow(2, 32) - 1,
 		"basic": true
+	},{
+		"name": "SimpleGrassTextured/General/evaluate_draw_time",
+		"type": TYPE_INT,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": "Slow:150,Normal:100,Fast:50,Very fast:25",
+		"default": 50,
+		"basic": false
 	},{
 		"name": "SimpleGrassTextured/General/interactive_resolution",
 		"type": TYPE_INT,
@@ -85,21 +98,21 @@ var _custom_settings := [{
 		"default": 256,
 		"basic": false
 	},{
-		"name": "SimpleGrassTextured/Shortcuts/draw",
+		"name": "SimpleGrassTextured/Shortcuts/airbrush_tool",
 		"type": TYPE_OBJECT,
 		"hint": PROPERTY_HINT_RESOURCE_TYPE,
 		"hint_string": "Shortcut",
 		"default": _create_shortcut(KEY_D),
 		"basic": true
 	},{
-		"name": "SimpleGrassTextured/Shortcuts/fill",
+		"name": "SimpleGrassTextured/Shortcuts/pencil_tool",
 		"type": TYPE_OBJECT,
 		"hint": PROPERTY_HINT_RESOURCE_TYPE,
 		"hint_string": "Shortcut",
 		"default": _create_shortcut(KEY_B),
 		"basic": true
 	},{
-		"name": "SimpleGrassTextured/Shortcuts/erase",
+		"name": "SimpleGrassTextured/Shortcuts/eraser_tool",
 		"type": TYPE_OBJECT,
 		"hint": PROPERTY_HINT_RESOURCE_TYPE,
 		"hint_string": "Shortcut",
@@ -191,15 +204,15 @@ func _enter_tree() -> void:
 	
 	_gui_toolbar.slider_radius.value_changed.connect(_on_slider_radius_value_changed)
 	_gui_toolbar.slider_density.value_changed.connect(_on_slider_density_value_changed)
-	_gui_toolbar.button_draw.toggled.connect(_on_button_draw_toggled)
-	_gui_toolbar.button_fill.toggled.connect(_on_button_fill_toggled)
-	_gui_toolbar.button_erase.toggled.connect(_on_button_erase_toggled)
+	_gui_toolbar.button_airbrush.toggled.connect(_on_button_airbrush_toggled)
+	_gui_toolbar.button_pencil.toggled.connect(_on_button_pencil_toggled)
+	_gui_toolbar.button_eraser.toggled.connect(_on_button_eraser_toggled)
 	_gui_toolbar.edit_slope_range.value_changed.connect(_on_edit_slope_range_changed)
 	_gui_toolbar.edit_scale.value_changed.connect(_on_edit_scale_value_changed)
 	_gui_toolbar.edit_rotation.value_changed.connect(_on_edit_rotation_value_changed)
 	_gui_toolbar.edit_rotation_rand.value_changed.connect(_on_edit_rotation_rand_value_changed)
 	_gui_toolbar.edit_distance.value_changed.connect(_on_edit_distance_value_changed)
-	self._edit_draw = true
+	_edit_tool = TOOL.AIRBRUSH
 
 
 func _exit_tree() -> void:
@@ -343,11 +356,12 @@ func _physics_process(_delta) -> void:
 		trans.origin = _position_draw
 		_decal_pointer.global_transform = trans
 		_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
-		_decal_pointer.visible = _edit_draw or _edit_fill or _edit_erase
+		_decal_pointer.visible = _edit_tool != TOOL.NONE
 		_mouse_event = EVENT_MOUSE.EVENT_NONE
+	
 	if _time_draw > 0:
 		if not _draw_paused:
-			if Time.get_ticks_msec() - _time_draw >= 150:
+			if Time.get_ticks_msec() - _time_draw >= _evaluate_draw_time:
 				_time_draw = Time.get_ticks_msec()
 				_eval_brush()
 
@@ -359,15 +373,15 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
-			if not (_edit_draw or _edit_fill or _edit_erase):
+			if _edit_tool == TOOL.NONE:
 				return EditorPlugin.AFTER_GUI_INPUT_PASS
 			if event.pressed:
-				if _edit_draw:
-					get_undo_redo().create_action(_grass_selected.name + " Draw")
-				elif _edit_fill:
-					get_undo_redo().create_action(_grass_selected.name + " Fill")
-				elif _edit_erase:
-					get_undo_redo().create_action(_grass_selected.name + " Erase")
+				if _edit_tool == TOOL.AIRBRUSH:
+					get_undo_redo().create_action(_grass_selected.name + " Airbrush tool")
+				elif _edit_tool == TOOL.PENCIL:
+					get_undo_redo().create_action(_grass_selected.name + " Pencil tool")
+				elif _edit_tool == TOOL.ERASER:
+					get_undo_redo().create_action(_grass_selected.name + " Eraser tool")
 				else:
 					get_undo_redo().create_action(_grass_selected.name)
 				get_undo_redo().add_undo_property(_grass_selected, &"baked_height_map", _grass_selected.baked_height_map)
@@ -545,39 +559,28 @@ func _update_gui() -> void:
 
 func _on_project_settings_changed() -> void:
 	_prev_config = _custom_config_memorize()
+	_evaluate_draw_time = get_custom_setting("SimpleGrassTextured/General/evaluate_draw_time")
 
 
-func _on_button_draw_toggled(pressed : bool) -> void:
-	_edit_draw = pressed
-	if _edit_draw:
-		self._edit_fill = false
-		self._edit_erase = false
-	if _grass_selected != null:
-		_decal_pointer.visible = _edit_draw or _edit_fill or _edit_erase
-	else:
-		_decal_pointer.visible = false
+func _on_button_airbrush_toggled(pressed : bool) -> void:
+	if pressed:
+		_edit_tool = TOOL.AIRBRUSH
+	elif _edit_tool == TOOL.AIRBRUSH:
+		_edit_tool = TOOL.NONE
 
 
-func _on_button_fill_toggled(pressed : bool) -> void:
-	_edit_fill = pressed
-	if _edit_fill:
-		self._edit_draw = false
-		self._edit_erase = false
-	if _grass_selected != null:
-		_decal_pointer.visible = _edit_draw or _edit_fill or _edit_erase
-	else:
-		_decal_pointer.visible = false
+func _on_button_pencil_toggled(pressed : bool) -> void:
+	if pressed:
+		_edit_tool = TOOL.PENCIL
+	elif _edit_tool == TOOL.PENCIL:
+		_edit_tool = TOOL.NONE
 
 
-func _on_button_erase_toggled(pressed : bool) -> void:
-	_edit_erase = pressed
-	if _edit_erase:
-		self._edit_draw = false
-		self._edit_fill = false
-	if _grass_selected != null:
-		_decal_pointer.visible = _edit_draw or _edit_fill or _edit_erase
-	else:
-		_decal_pointer.visible = false
+func _on_button_eraser_toggled(pressed : bool) -> void:
+	if pressed:
+		_edit_tool = TOOL.ERASER
+	elif _edit_tool == TOOL.ERASER:
+		_edit_tool = TOOL.NONE
 
 
 func _on_slider_radius_value_changed(value : float) -> void:
@@ -622,37 +625,42 @@ func _on_edit_distance_value_changed(value : float) -> void:
 		_grass_selected.sgt_dist_min = value
 
 
-func _on_set_draw(value : bool) -> void:
-	_edit_draw = value
-	if _edit_draw:
+func _on_set_tool(value : TOOL) -> void:
+	_edit_tool = value
+	if _edit_tool == TOOL.AIRBRUSH:
 		_decal_pointer.modulate = Color.WHITE
 		_gui_toolbar.slider_density.editable = true
 		_gui_toolbar.button_density.disabled = false
-	_gui_toolbar.button_draw.button_pressed = _edit_draw
-
-
-func _on_set_fill(value : bool) -> void:
-	_edit_fill = value
-	if _edit_fill:
+		_gui_toolbar.button_airbrush.button_pressed = true
+		_gui_toolbar.button_pencil.button_pressed = false
+		_gui_toolbar.button_eraser.button_pressed = false
+		_gui_toolbar.set_density_modulate(Color.WHITE)
+	elif _edit_tool == TOOL.PENCIL:
 		_decal_pointer.modulate = Color.YELLOW
 		_gui_toolbar.slider_density.editable = false
 		_gui_toolbar.button_density.disabled = true
-	_gui_toolbar.button_fill.button_pressed = _edit_fill
-
-
-func _on_set_erase(value : bool) -> void:
-	_edit_erase = value
-	if _edit_erase:
+		_gui_toolbar.button_airbrush.button_pressed = false
+		_gui_toolbar.button_pencil.button_pressed = true
+		_gui_toolbar.button_eraser.button_pressed = false
+		_gui_toolbar.set_density_modulate(Color(1, 1, 1, 0.25))
+	elif _edit_tool == TOOL.ERASER:
 		_decal_pointer.modulate = Color.RED
 		_gui_toolbar.slider_density.editable = false
 		_gui_toolbar.button_density.disabled = true
-	_gui_toolbar.button_erase.button_pressed = _edit_erase
+		_gui_toolbar.button_airbrush.button_pressed = false
+		_gui_toolbar.button_pencil.button_pressed = false
+		_gui_toolbar.button_eraser.button_pressed = true
+		_gui_toolbar.set_density_modulate(Color(1, 1, 1, 0.25))
+	if _grass_selected != null:
+		_decal_pointer.visible = _edit_tool != TOOL.NONE
+	else:
+		_decal_pointer.visible = false
 
 
 func _eval_brush() -> void:
 	if _grass_selected == null:
 		return
-	if _edit_fill:
+	if _edit_tool == TOOL.PENCIL:
 		var steep : float = _grass_selected.sgt_dist_min
 		var list_trans := []
 		var follow_normal : bool = _grass_selected.sgt_follow_normal
@@ -693,7 +701,7 @@ func _eval_brush() -> void:
 				z += steep
 			x += steep
 		_grass_selected.add_grass_batch(list_trans)
-	elif _edit_draw:
+	elif _edit_tool == TOOL.AIRBRUSH:
 		var follow_normal : bool = _grass_selected.sgt_follow_normal
 		var slope := Vector2(deg_to_rad(_grass_selected.sgt_slope.x), deg_to_rad(_grass_selected.sgt_slope.y))
 		for i in _edit_density:
@@ -719,7 +727,7 @@ func _eval_brush() -> void:
 					_edit_scale,
 					deg_to_rad(_edit_rotation) + (PI * (_edit_rotation_rand - (randf() * _edit_rotation_rand * 2.0)))
 				)
-	elif _edit_erase:
+	elif _edit_tool == TOOL.ERASER:
 		_grass_selected.erase(_position_draw - _grass_selected.global_position, _edit_radius)
 	if _grass_selected.multimesh != null:
 		_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)

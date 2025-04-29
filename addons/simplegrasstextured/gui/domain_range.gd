@@ -56,6 +56,7 @@ var _mouse_over_grabber_max := false
 func _ready() -> void:
 	theme_changed.connect(_on_theme_changed)
 	_on_theme_changed()
+	_update_tooltip()
 
 
 func _notification(what: int) -> void:
@@ -231,6 +232,7 @@ func set_value(v_min: float, v_max: float) -> void:
 		value_min = v_min
 		value_max = v_max
 		value_changed.emit(value_min, value_max)
+		_update_tooltip()
 		queue_redraw()
 
 
@@ -239,6 +241,7 @@ func set_value_min(value: float) -> void:
 	if value != value_min:
 		value_min = value
 		value_changed.emit(value_min, value_max)
+		_update_tooltip()
 		queue_redraw()
 
 
@@ -247,7 +250,14 @@ func set_value_max(value: float) -> void:
 	if value != value_max:
 		value_max = value
 		value_changed.emit(value_min, value_max)
+		_update_tooltip()
 		queue_redraw()
+
+
+func _update_tooltip() -> void:
+	tooltip_text = "Slope to avoid:\n"
+	tooltip_text += "Min: %0.*f°\n" %[step_decimals(step), value_min]
+	tooltip_text += "Max: %0.*f°\n" %[step_decimals(step), value_max]
 
 
 func _grab_end() -> void:

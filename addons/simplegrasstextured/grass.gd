@@ -298,6 +298,8 @@ func add_grass_batch(transforms : Array):
 
 
 func erase(pos : Vector3, radius : float):
+	if not multimesh.get_aabb().intersects(AABB(pos - Vector3(radius, radius, radius), Vector3(radius, radius, radius) * 2)):
+		return
 	var multi_new := MultiMesh.new()
 	var array : Array[Transform3D] = []
 	multi_new.transform_format = MultiMesh.TRANSFORM_3D
@@ -308,10 +310,15 @@ func erase(pos : Vector3, radius : float):
 	if multimesh == null:
 		multimesh = MultiMesh.new()
 		multimesh.mesh = mesh if mesh != null else _default_mesh
+	var num_to_erase := 0
 	for i in range(multimesh.instance_count):
 		var trans := multimesh.get_instance_transform(i)
 		if trans.origin.distance_to(pos) > radius:
 			array.append(trans)
+		else:
+			num_to_erase += 1
+	if num_to_erase == 0:
+		return
 	multi_new.instance_count = array.size()
 	for i in range(array.size()):
 		multi_new.set_instance_transform(i, array[i])

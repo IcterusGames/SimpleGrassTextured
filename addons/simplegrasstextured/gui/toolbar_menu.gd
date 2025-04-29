@@ -26,7 +26,6 @@ extends MenuButton
 
 enum MENU_ID {
 	TOOL_FOLLOW_NORMAL,
-	TOOL_FILL_TERRAIN,
 	AUTO_CENTER_POSITION,
 	CAST_SHADOW,
 	BAKE_HEIGHT_MAP,
@@ -47,7 +46,6 @@ func set_plugin(plugin :EditorPlugin) -> void:
 	_tools_menu = PopupMenu.new()
 	_tools_menu.name = &"ToolsMenu"
 	_tools_menu.add_check_item("Follow terrain's normal", MENU_ID.TOOL_FOLLOW_NORMAL)
-	_tools_menu.add_item("Fill terrain", MENU_ID.TOOL_FILL_TERRAIN)
 	popup.add_child(_tools_menu)
 	popup.clear()
 	popup.add_submenu_item("Tools", "ToolsMenu")
@@ -144,8 +142,6 @@ func _on_sgt_tools_menu_button(id :int) -> void:
 		MENU_ID.TOOL_FOLLOW_NORMAL:
 			_tools_menu.set_item_checked(id, not _tools_menu.is_item_checked(id))
 			_grass_selected.sgt_follow_normal = _tools_menu.is_item_checked(id)
-		MENU_ID.TOOL_FILL_TERRAIN:
-			_plugin.tool_fill_terrain()
 
 
 func _on_about_to_popup() -> void:

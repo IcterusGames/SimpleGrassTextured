@@ -36,9 +36,9 @@ var _shortcut_radius_dec := Shortcut.new()
 var _shortcut_density_inc := Shortcut.new()
 var _shortcut_density_dec := Shortcut.new()
 
-@onready var button_draw :Button = $ButtonDraw
-@onready var button_fill :Button = $ButtonFill
-@onready var button_erase :Button = $ButtonEraser
+@onready var button_airbrush :Button = %ButtonAirbrush
+@onready var button_pencil :Button = %ButtonPencil
+@onready var button_eraser :Button = %ButtonEraser
 @onready var button_density :Button = %IconDensity
 @onready var slider_radius :HSlider = $HSliderRadius
 @onready var slider_density :HSlider = $HSliderDensity
@@ -86,9 +86,9 @@ func set_plugin(plugin :EditorPlugin) -> void:
 	var config := ConfigFile.new()
 	config.load("res://addons/simplegrasstextured/plugin.cfg")
 	%LabelVersion.text = config.get_value("plugin", "version")
-	button_draw.shortcut = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/draw")
-	button_fill.shortcut = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/fill")
-	button_erase.shortcut = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/erase")
+	button_airbrush.shortcut = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/airbrush_tool")
+	button_pencil.shortcut = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/pencil_tool")
+	button_eraser.shortcut = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/eraser_tool")
 	_shortcut_radius_inc = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/radius_increment")
 	_shortcut_radius_dec = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/radius_decrement")
 	_shortcut_density_inc = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/density_increment")
@@ -98,6 +98,11 @@ func set_plugin(plugin :EditorPlugin) -> void:
 
 func set_current_grass(grass) -> void:
 	%ButtonMore.set_current_grass(grass)
+
+
+func set_density_modulate(color: Color) -> void:
+	%IconDensity.self_modulate = color
+	slider_density.modulate = color
 
 
 func _create_slider(label :String, min :float, max :float, step :float, value :float = 0.0) -> EditorSpinSlider:
@@ -146,6 +151,15 @@ func _on_theme_changed() -> void:
 	%IconDensity.modulate = get_theme_color(&"font_color", &"Label")
 	%IconDistance.modulate = get_theme_color(&"font_color", &"Label")
 	%IconSlope.modulate = get_theme_color(&"font_color", &"Label")
+	var base_color: Color = EditorInterface.get_base_control().get_theme_color(&"base_color", &"Editor")
+	if base_color.get_luminance() < 0.5:
+		button_airbrush.icon = load("res://addons/simplegrasstextured/images/sgt_icon_airbrush.svg")
+		button_pencil.icon = load("res://addons/simplegrasstextured/images/sgt_icon_pen.svg")
+		button_eraser.icon = load("res://addons/simplegrasstextured/images/sgt_icon_eraser.svg")
+	else:
+		button_airbrush.icon = load("res://addons/simplegrasstextured/images/sgt_icon_airbrush_dark.svg")
+		button_pencil.icon = load("res://addons/simplegrasstextured/images/sgt_icon_pen_dark.svg")
+		button_eraser.icon = load("res://addons/simplegrasstextured/images/sgt_icon_eraser_dark.svg")
 	if _button_more != null:
 		_button_more.icon = get_theme_icon(&"GuiTabMenuHl", &"EditorIcons")
 	# Test that the icons size matches with editor UI scale
@@ -206,5 +220,8 @@ func _on_timer_reimport_icons_timeout() -> void:
 	"res://addons/simplegrasstextured/images/sgt_icon_density.svg",
 	"res://addons/simplegrasstextured/images/sgt_icon_distance.svg",
 	"res://addons/simplegrasstextured/images/sgt_icon_radius.svg",
-	"res://addons/simplegrasstextured/images/sgt_icon_slope.svg"
+	"res://addons/simplegrasstextured/images/sgt_icon_slope.svg",
+	"res://addons/simplegrasstextured/images/sgt_icon_airbrush.svg",
+	"res://addons/simplegrasstextured/images/sgt_icon_pen.svg",
+	"res://addons/simplegrasstextured/images/sgt_icon_eraser.svg"
 	])
