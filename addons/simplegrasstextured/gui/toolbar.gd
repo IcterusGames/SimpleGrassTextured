@@ -24,6 +24,14 @@
 @tool
 extends Control
 
+enum MENU_SHAPE_ID {
+	TOOL_SHAPE_SPHERE,
+	TOOL_SHAPE_CYLINDER,
+	TOOL_SHAPE_CYLINDER_INF_H,
+	TOOL_SHAPE_BOX,
+	TOOL_SHAPE_BOX_INF_H,
+}
+
 const DEFAULT_RADIUS := 2.0
 const DEFAULT_DENSITY := 25.0
 const DEFAULT_SCALE := 1.0
@@ -35,6 +43,8 @@ var _shortcut_radius_inc := Shortcut.new()
 var _shortcut_radius_dec := Shortcut.new()
 var _shortcut_density_inc := Shortcut.new()
 var _shortcut_density_dec := Shortcut.new()
+var _plugin: EditorPlugin = null
+var _grass_selected = null
 
 @onready var button_airbrush :Button = %ButtonAirbrush
 @onready var button_pencil :Button = %ButtonPencil
@@ -52,6 +62,9 @@ var _shortcut_density_dec := Shortcut.new()
 @onready var _label_radius :Label = $HSliderRadius/Label
 @onready var _label_density :Label = $HSliderDensity/Label
 @onready var _button_more :MenuButton = $ButtonMore
+@onready var _airbrush_options: MenuButton = %AirbrushOptions
+@onready var _pencil_options: MenuButton = %PencilOptions
+@onready var _eraser_options: MenuButton = %EraserOptions
 @onready var _tween_radius :Tween = null
 @onready var _tween_density :Tween = null
 
@@ -81,6 +94,7 @@ func _unhandled_input(event :InputEvent) -> void:
 
 
 func set_plugin(plugin :EditorPlugin) -> void:
+	_plugin = plugin
 	theme_changed.connect(_on_theme_changed)
 	%ButtonMore.set_plugin(plugin)
 	var config := ConfigFile.new()
@@ -89,15 +103,44 @@ func set_plugin(plugin :EditorPlugin) -> void:
 	button_airbrush.shortcut = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/airbrush_tool")
 	button_pencil.shortcut = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/pencil_tool")
 	button_eraser.shortcut = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/eraser_tool")
+	button_airbrush.gui_input.connect(_on_button_tool_gui_input.bind(button_airbrush, _airbrush_options))
+	button_pencil.gui_input.connect(_on_button_tool_gui_input.bind(button_pencil, _pencil_options))
+	button_eraser.gui_input.connect(_on_button_tool_gui_input.bind(button_eraser, _eraser_options))
 	_shortcut_radius_inc = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/radius_increment")
 	_shortcut_radius_dec = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/radius_decrement")
 	_shortcut_density_inc = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/density_increment")
 	_shortcut_density_dec = plugin.get_custom_setting("SimpleGrassTextured/Shortcuts/density_decrement")
+	_airbrush_options.get_popup().add_radio_check_item("Cylinder", MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER)
+	_airbrush_options.get_popup().add_radio_check_item("Box", MENU_SHAPE_ID.TOOL_SHAPE_BOX)
+	_airbrush_options.get_popup().about_to_popup.connect(_on_tool_options_about_to_popup.bind(_airbrush_options))
+	_airbrush_options.get_popup().id_pressed.connect(_on_sgt_shape_menu_pressed.bind("airbrush", _airbrush_options.get_popup()))
+	_pencil_options.get_popup().add_radio_check_item("Cylinder", MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER)
+	_pencil_options.get_popup().add_radio_check_item("Box", MENU_SHAPE_ID.TOOL_SHAPE_BOX)
+	_pencil_options.get_popup().about_to_popup.connect(_on_tool_options_about_to_popup.bind(_pencil_options))
+	_pencil_options.get_popup().id_pressed.connect(_on_sgt_shape_menu_pressed.bind("pencil", _pencil_options.get_popup()))
+	_eraser_options.get_popup().add_radio_check_item("Sphere", MENU_SHAPE_ID.TOOL_SHAPE_SPHERE)
+	_eraser_options.get_popup().add_radio_check_item("Cylinder", MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER)
+	_eraser_options.get_popup().add_radio_check_item("Infinite vertical cylinder", MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER_INF_H)
+	_eraser_options.get_popup().add_radio_check_item("Box", MENU_SHAPE_ID.TOOL_SHAPE_BOX)
+	_eraser_options.get_popup().add_radio_check_item("Infinite vertical box", MENU_SHAPE_ID.TOOL_SHAPE_BOX_INF_H)
+	_eraser_options.get_popup().about_to_popup.connect(_on_tool_options_about_to_popup.bind(_eraser_options))
+	_eraser_options.get_popup().id_pressed.connect(_on_sgt_shape_menu_pressed.bind("eraser", _eraser_options.get_popup()))
 	_on_theme_changed()
 
 
 func set_current_grass(grass) -> void:
+	_grass_selected = grass
 	%ButtonMore.set_current_grass(grass)
+	if _grass_selected == null:
+		return
+	for tool_name in _grass_selected.sgt_tool_shape:
+		match tool_name:
+			"airbrush":
+				_update_shape_menu_from_grass(_airbrush_options.get_popup(), _grass_selected.sgt_tool_shape[tool_name])
+			"pencil":
+				_update_shape_menu_from_grass(_pencil_options.get_popup(), _grass_selected.sgt_tool_shape[tool_name])
+			"eraser":
+				_update_shape_menu_from_grass(_eraser_options.get_popup(), _grass_selected.sgt_tool_shape[tool_name])
 
 
 func set_density_modulate(color: Color) -> void:
@@ -105,16 +148,67 @@ func set_density_modulate(color: Color) -> void:
 	slider_density.modulate = color
 
 
-func _create_slider(label :String, min :float, max :float, step :float, value :float = 0.0) -> EditorSpinSlider:
+func _create_slider(label :String, min_value :float, max_value :float, step :float, value :float = 0.0) -> EditorSpinSlider:
 	var slider := EditorSpinSlider.new()
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.step = step;
-	slider.min_value = min
-	slider.max_value = max
+	slider.min_value = min_value
+	slider.max_value = max_value
 	slider.label = label
 	slider.value = value
 	slider.custom_minimum_size.x = 75
 	return slider
+
+
+func _on_tool_options_about_to_popup(_button_options: MenuButton) -> void:
+	set_current_grass(_grass_selected)
+
+
+func _update_shape_menu_from_grass(popupmenu: PopupMenu, plugin_id_shape: int) -> void:
+	for i in popupmenu.item_count:
+		popupmenu.set_item_checked(i, false)
+	var idx := -1
+	match _plugin.get_tool_shape_name(plugin_id_shape):
+		"sphere":
+			idx = popupmenu.get_item_index(MENU_SHAPE_ID.TOOL_SHAPE_SPHERE)
+		"cylinder":
+			idx = popupmenu.get_item_index(MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER)
+		"cylinder_inf_h":
+			idx = popupmenu.get_item_index(MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER_INF_H)
+		"box":
+			idx = popupmenu.get_item_index(MENU_SHAPE_ID.TOOL_SHAPE_BOX)
+		"box_inf_h":
+			idx = popupmenu.get_item_index(MENU_SHAPE_ID.TOOL_SHAPE_BOX_INF_H)
+		_:
+			idx = -1
+	if idx == -1:
+		return
+	popupmenu.set_item_checked(idx, true)
+
+
+func _on_sgt_shape_menu_pressed(id: int, tool_name: String, popupmenu: PopupMenu) -> void:
+	if _grass_selected == null:
+		return
+	for i in popupmenu.item_count:
+		popupmenu.set_item_checked(i, false)
+	var idx := popupmenu.get_item_index(id)
+	if idx == -1:
+		return
+	popupmenu.set_item_checked(idx, true)
+	var shape_name := ""
+	match id:
+		MENU_SHAPE_ID.TOOL_SHAPE_SPHERE:
+			shape_name = "sphere"
+		MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER:
+			shape_name = "cylinder"
+		MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER_INF_H:
+			shape_name = "cylinder_inf_h"
+		MENU_SHAPE_ID.TOOL_SHAPE_BOX:
+			shape_name = "box"
+		MENU_SHAPE_ID.TOOL_SHAPE_BOX_INF_H:
+			shape_name = "box_inf_h"
+	_plugin.set_tool_shape(tool_name, shape_name)
+	_plugin.set_tool(tool_name)
 
 
 func _on_h_slider_radius_value_changed(value :float) -> void:
@@ -147,19 +241,29 @@ func _on_theme_changed() -> void:
 	%IconScale.icon = get_theme_icon(&"ToolScale", &"EditorIcons")
 	%IconRotation.icon = get_theme_icon(&"ToolRotate", &"EditorIcons")
 	%IconRotationRand.icon = get_theme_icon(&"RandomNumberGenerator", &"EditorIcons")
-	%IconRadius.modulate = get_theme_color(&"font_color", &"Label")
-	%IconDensity.modulate = get_theme_color(&"font_color", &"Label")
-	%IconDistance.modulate = get_theme_color(&"font_color", &"Label")
-	%IconSlope.modulate = get_theme_color(&"font_color", &"Label")
 	var base_color: Color = EditorInterface.get_base_control().get_theme_color(&"base_color", &"Editor")
 	if base_color.get_luminance() < 0.5:
 		button_airbrush.icon = load("res://addons/simplegrasstextured/images/sgt_icon_airbrush.svg")
 		button_pencil.icon = load("res://addons/simplegrasstextured/images/sgt_icon_pen.svg")
 		button_eraser.icon = load("res://addons/simplegrasstextured/images/sgt_icon_eraser.svg")
+		_airbrush_options.icon = load("res://addons/simplegrasstextured/images/sgt_icon_arrow_up.svg")
+		_pencil_options.icon = load("res://addons/simplegrasstextured/images/sgt_icon_arrow_up.svg")
+		_eraser_options.icon = load("res://addons/simplegrasstextured/images/sgt_icon_arrow_up.svg")
+		%IconSlope.icon = load("res://addons/simplegrasstextured/images/sgt_icon_slope.svg")
+		%IconRadius.icon = load("res://addons/simplegrasstextured/images/sgt_icon_radius.svg")
+		%IconDensity.icon = load("res://addons/simplegrasstextured/images/sgt_icon_density.svg")
+		%IconDistance.icon = load("res://addons/simplegrasstextured/images/sgt_icon_distance.svg")
 	else:
 		button_airbrush.icon = load("res://addons/simplegrasstextured/images/sgt_icon_airbrush_dark.svg")
 		button_pencil.icon = load("res://addons/simplegrasstextured/images/sgt_icon_pen_dark.svg")
 		button_eraser.icon = load("res://addons/simplegrasstextured/images/sgt_icon_eraser_dark.svg")
+		_airbrush_options.icon = load("res://addons/simplegrasstextured/images/sgt_icon_arrow_up_dark.svg")
+		_pencil_options.icon = load("res://addons/simplegrasstextured/images/sgt_icon_arrow_up_dark.svg")
+		_eraser_options.icon = load("res://addons/simplegrasstextured/images/sgt_icon_arrow_up_dark.svg")
+		%IconSlope.icon = load("res://addons/simplegrasstextured/images/sgt_icon_slope_dark.svg")
+		%IconRadius.icon = load("res://addons/simplegrasstextured/images/sgt_icon_radius_dark.svg")
+		%IconDensity.icon = load("res://addons/simplegrasstextured/images/sgt_icon_density_dark.svg")
+		%IconDistance.icon = load("res://addons/simplegrasstextured/images/sgt_icon_distance_dark.svg")
 	if _button_more != null:
 		_button_more.icon = get_theme_icon(&"GuiTabMenuHl", &"EditorIcons")
 	# Test that the icons size matches with editor UI scale
@@ -225,3 +329,9 @@ func _on_timer_reimport_icons_timeout() -> void:
 	"res://addons/simplegrasstextured/images/sgt_icon_pen.svg",
 	"res://addons/simplegrasstextured/images/sgt_icon_eraser.svg"
 	])
+
+
+func _on_button_tool_gui_input(event: InputEvent, tool: Button, button_options: MenuButton) -> void:
+	if event is InputEventMouseButton:
+		if event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+			button_options.get_popup().popup(Rect2(tool.global_position + Vector2(tool.size.x, 0), Vector2.ZERO))

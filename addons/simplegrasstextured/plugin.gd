@@ -24,7 +24,7 @@
 @tool
 extends EditorPlugin
 
-const DEPTH_BRUSH := 10.0
+const DEFAULT_POINTER_DEPTH := 10.0
 
 enum EVENT_MOUSE {
 	EVENT_NONE,
@@ -39,8 +39,20 @@ enum TOOL {
 	ERASER
 }
 
+enum TOOL_SHAPE {
+	SPHERE,
+	CYLINDER,
+	CYLINDER_INF_H,
+	BOX,
+	BOX_INF_H
+}
+
 var _raycast_3d : RayCast3D = null
-var _decal_pointer : Decal = null
+var _pointer_decal : Decal = null
+var _pointer_img_circle = load("res://addons/simplegrasstextured/images/pointer.png")
+var _pointer_img_rect = load("res://addons/simplegrasstextured/images/pointer_rect.png")
+var _pointer_depth: int = DEFAULT_POINTER_DEPTH
+var _pointer_rotate: bool = true
 var _grass_selected = null
 var _position_draw := Vector3.ZERO
 var _normal_draw := Vector3.ZERO
@@ -195,12 +207,14 @@ func _enter_tree() -> void:
 	_raycast_3d = RayCast3D.new()
 	_raycast_3d.collision_mask = pow(2, 32) - 1
 	_raycast_3d.visible = false
-	_decal_pointer = Decal.new()
-	_decal_pointer.set_texture(Decal.TEXTURE_ALBEDO, load("res://addons/simplegrasstextured/images/pointer.png"))
-	_decal_pointer.visible = false
-	_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
+	_pointer_decal = Decal.new()
+	_pointer_decal.set_texture(Decal.TEXTURE_ALBEDO, _pointer_img_circle)
+	_pointer_decal.visible = false
+	_pointer_decal.extents = Vector3(_edit_radius, _pointer_depth, _edit_radius)
+	_pointer_decal.upper_fade = 0
+	_pointer_decal.lower_fade = 0
 	add_child(_raycast_3d)
-	add_child(_decal_pointer)
+	add_child(_pointer_decal)
 	
 	_gui_toolbar.slider_radius.value_changed.connect(_on_slider_radius_value_changed)
 	_gui_toolbar.slider_density.value_changed.connect(_on_slider_density_value_changed)
@@ -222,7 +236,7 @@ func _exit_tree() -> void:
 		ProjectSettings.save()
 	_grass_selected = null
 	_raycast_3d.queue_free()
-	_decal_pointer.queue_free()
+	_pointer_decal.queue_free()
 	remove_custom_type("SimpleGrassTextured")
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_BOTTOM, _gui_toolbar)
 	_gui_toolbar.queue_free()
@@ -283,6 +297,7 @@ func _handles(object) -> bool:
 	if object != null and object.has_meta("SimpleGrassTextured") and object.visible:
 		_grass_selected = object
 		_update_gui()
+		_update_pointer()
 		return true
 	_grass_selected = null
 	return false
@@ -291,6 +306,7 @@ func _handles(object) -> bool:
 func _edit(object) -> void:
 	_grass_selected = object
 	_update_gui()
+	_update_pointer()
 
 
 func _make_visible(visible : bool) -> void:
@@ -302,7 +318,7 @@ func _make_visible(visible : bool) -> void:
 	else:
 		_gui_toolbar.visible = false
 		_gui_toolbar_up.visible = false
-		_decal_pointer.visible = false
+		_pointer_decal.visible = false
 		_grass_selected = null
 		_gui_toolbar.set_current_grass(null)
 		_gui_toolbar_up.set_current_grass(null)
@@ -335,7 +351,7 @@ func _physics_process(_delta) -> void:
 		_raycast_3d.force_raycast_update()
 		if ( not _raycast_3d.is_colliding()
 		or ( _object_draw != null and _raycast_3d.get_collider() != _object_draw )):
-			_decal_pointer.visible = false
+			_pointer_decal.visible = false
 			_draw_paused = true
 			_mouse_event = EVENT_MOUSE.EVENT_NONE
 			return
@@ -343,20 +359,24 @@ func _physics_process(_delta) -> void:
 			_draw_paused = false
 		_position_draw = _raycast_3d.get_collision_point()
 		_normal_draw = _raycast_3d.get_collision_normal()
-		var trans := Transform3D()
-		if abs(_normal_draw.z) == 1:
-			trans.basis.x = Vector3(1,0,0)
-			trans.basis.y = Vector3(0,0,_normal_draw.z)
-			trans.basis.z = Vector3(0,_normal_draw.z,0)
+		if _pointer_rotate:
+			var trans := Transform3D()
+			if abs(_normal_draw.z) == 1:
+				trans.basis.x = Vector3(1,0,0)
+				trans.basis.y = Vector3(0,0,_normal_draw.z)
+				trans.basis.z = Vector3(0,_normal_draw.z,0)
+			else:
+				trans.basis.y = _normal_draw
+				trans.basis.x = _normal_draw.cross(trans.basis.z)
+				trans.basis.z = trans.basis.x.cross(_normal_draw)
+				trans.basis = trans.basis.orthonormalized()
+			trans.origin = _position_draw
+			_pointer_decal.global_transform = trans
 		else:
-			trans.basis.y = _normal_draw
-			trans.basis.x = _normal_draw.cross(trans.basis.z)
-			trans.basis.z = trans.basis.x.cross(_normal_draw)
-			trans.basis = trans.basis.orthonormalized()
-		trans.origin = _position_draw
-		_decal_pointer.global_transform = trans
-		_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
-		_decal_pointer.visible = _edit_tool != TOOL.NONE
+			_pointer_decal.global_position = _position_draw
+			_pointer_decal.rotation = Vector3.ZERO
+		_pointer_decal.extents = Vector3(_edit_radius, _pointer_depth, _edit_radius)
+		_pointer_decal.visible = _edit_tool != TOOL.NONE
 		_mouse_event = EVENT_MOUSE.EVENT_NONE
 	
 	if _time_draw > 0:
@@ -531,6 +551,52 @@ func get_custom_setting(name :String) -> Variant:
 	return null
 
 
+func set_tool(tool_name: String) -> void:
+	match tool_name:
+		"none":
+			_edit_tool = TOOL.NONE
+		"airbrush":
+			_edit_tool = TOOL.AIRBRUSH
+		"pencil":
+			_edit_tool = TOOL.PENCIL
+		"eraser":
+			_edit_tool = TOOL.ERASER
+
+
+func set_tool_shape(tool_name: String, shape_name: String) -> void:
+	if _grass_selected == null:
+		return
+	var shape_id: TOOL_SHAPE
+	match shape_name:
+		"sphere":
+			shape_id = TOOL_SHAPE.SPHERE
+		"cylinder":
+			shape_id = TOOL_SHAPE.CYLINDER
+		"cylinder_inf_h":
+			shape_id = TOOL_SHAPE.CYLINDER_INF_H
+		"box":
+			shape_id = TOOL_SHAPE.BOX
+		"box_inf_h":
+			shape_id = TOOL_SHAPE.BOX_INF_H
+	_grass_selected.sgt_tool_shape[tool_name] = shape_id
+	_update_pointer()
+
+
+func get_tool_shape_name(shape_id: int) -> String:
+	match shape_id:
+		TOOL_SHAPE.SPHERE:
+			return "sphere"
+		TOOL_SHAPE.CYLINDER:
+			return "cylinder"
+		TOOL_SHAPE.CYLINDER_INF_H:
+			return "cylinder_inf_h"
+		TOOL_SHAPE.BOX:
+			return "box"
+		TOOL_SHAPE.BOX_INF_H:
+			return "box_inf_h"
+	return ""
+
+
 func _init_default_project_settings() -> void:
 	for entry in _custom_settings:
 		if not ProjectSettings.has_setting(entry["name"]):
@@ -543,6 +609,12 @@ func _init_default_project_settings() -> void:
 
 func _update_gui() -> void:
 	if _grass_selected != null:
+		if not _grass_selected.sgt_tool_shape.has("airbrush"):
+			_grass_selected.sgt_tool_shape["airbrush"] = TOOL_SHAPE.CYLINDER
+		if not _grass_selected.sgt_tool_shape.has("pencil"):
+			_grass_selected.sgt_tool_shape["pencil"] = TOOL_SHAPE.CYLINDER
+		if not _grass_selected.sgt_tool_shape.has("eraser"):
+			_grass_selected.sgt_tool_shape["eraser"] = TOOL_SHAPE.SPHERE
 		_gui_toolbar.slider_radius.value = _grass_selected.sgt_radius
 		_gui_toolbar.slider_density.value = _grass_selected.sgt_density
 		_gui_toolbar.edit_scale.value = _grass_selected.sgt_scale
@@ -557,6 +629,49 @@ func _update_gui() -> void:
 		_raycast_3d.collision_mask = _grass_selected.collision_mask
 
 
+func _update_pointer() -> void:
+	if _grass_selected == null:
+		_pointer_decal.visible = false
+		return
+	_pointer_decal.visible = true
+	var tool_name := ""
+	match _edit_tool:
+		TOOL.NONE:
+			_pointer_decal.visible = false
+			return
+		TOOL.PENCIL:
+			tool_name = "pencil"
+			_pointer_rotate = true
+		TOOL.AIRBRUSH:
+			tool_name = "airbrush"
+			_pointer_rotate = true
+		TOOL.ERASER:
+			tool_name = "eraser"
+			_pointer_rotate = false
+	match _grass_selected.sgt_tool_shape[tool_name]:
+		TOOL_SHAPE.SPHERE:
+			if _edit_tool == TOOL.ERASER:
+				_pointer_rotate = true
+			_pointer_depth = _edit_radius
+			_pointer_decal.set_texture(Decal.TEXTURE_ALBEDO, _pointer_img_circle)
+		TOOL_SHAPE.CYLINDER:
+			if _edit_tool == TOOL.ERASER:
+				_pointer_rotate = true
+			_pointer_depth = DEFAULT_POINTER_DEPTH
+			_pointer_decal.set_texture(Decal.TEXTURE_ALBEDO, _pointer_img_circle)
+		TOOL_SHAPE.CYLINDER_INF_H:
+			_pointer_depth = 1000000
+			_pointer_decal.set_texture(Decal.TEXTURE_ALBEDO, _pointer_img_circle)
+		TOOL_SHAPE.BOX:
+			if _edit_tool == TOOL.ERASER:
+				_pointer_rotate = true
+			_pointer_depth = _edit_radius
+			_pointer_decal.set_texture(Decal.TEXTURE_ALBEDO, _pointer_img_rect)
+		TOOL_SHAPE.BOX_INF_H:
+			_pointer_depth = 1000000
+			_pointer_decal.set_texture(Decal.TEXTURE_ALBEDO, _pointer_img_rect)
+
+
 func _on_project_settings_changed() -> void:
 	_prev_config = _custom_config_memorize()
 	_evaluate_draw_time = get_custom_setting("SimpleGrassTextured/General/evaluate_draw_time")
@@ -567,6 +682,7 @@ func _on_button_airbrush_toggled(pressed : bool) -> void:
 		_edit_tool = TOOL.AIRBRUSH
 	elif _edit_tool == TOOL.AIRBRUSH:
 		_edit_tool = TOOL.NONE
+	_update_pointer()
 
 
 func _on_button_pencil_toggled(pressed : bool) -> void:
@@ -574,6 +690,7 @@ func _on_button_pencil_toggled(pressed : bool) -> void:
 		_edit_tool = TOOL.PENCIL
 	elif _edit_tool == TOOL.PENCIL:
 		_edit_tool = TOOL.NONE
+	_update_pointer()
 
 
 func _on_button_eraser_toggled(pressed : bool) -> void:
@@ -581,11 +698,13 @@ func _on_button_eraser_toggled(pressed : bool) -> void:
 		_edit_tool = TOOL.ERASER
 	elif _edit_tool == TOOL.ERASER:
 		_edit_tool = TOOL.NONE
+	_update_pointer()
 
 
 func _on_slider_radius_value_changed(value : float) -> void:
 	_edit_radius = value
-	_decal_pointer.extents = Vector3(_edit_radius, DEPTH_BRUSH, _edit_radius)
+	_update_pointer()
+	_pointer_decal.extents = Vector3(_edit_radius, _pointer_depth, _edit_radius)
 	if _grass_selected != null:
 		_grass_selected.sgt_radius = value
 
@@ -628,7 +747,7 @@ func _on_edit_distance_value_changed(value : float) -> void:
 func _on_set_tool(value : TOOL) -> void:
 	_edit_tool = value
 	if _edit_tool == TOOL.AIRBRUSH:
-		_decal_pointer.modulate = Color.WHITE
+		_pointer_decal.modulate = Color.WHITE
 		_gui_toolbar.slider_density.editable = true
 		_gui_toolbar.button_density.disabled = false
 		_gui_toolbar.button_airbrush.button_pressed = true
@@ -636,7 +755,7 @@ func _on_set_tool(value : TOOL) -> void:
 		_gui_toolbar.button_eraser.button_pressed = false
 		_gui_toolbar.set_density_modulate(Color.WHITE)
 	elif _edit_tool == TOOL.PENCIL:
-		_decal_pointer.modulate = Color.YELLOW
+		_pointer_decal.modulate = Color.YELLOW
 		_gui_toolbar.slider_density.editable = false
 		_gui_toolbar.button_density.disabled = true
 		_gui_toolbar.button_airbrush.button_pressed = false
@@ -644,7 +763,7 @@ func _on_set_tool(value : TOOL) -> void:
 		_gui_toolbar.button_eraser.button_pressed = false
 		_gui_toolbar.set_density_modulate(Color(1, 1, 1, 0.25))
 	elif _edit_tool == TOOL.ERASER:
-		_decal_pointer.modulate = Color.RED
+		_pointer_decal.modulate = Color.RED
 		_gui_toolbar.slider_density.editable = false
 		_gui_toolbar.button_density.disabled = true
 		_gui_toolbar.button_airbrush.button_pressed = false
@@ -652,9 +771,9 @@ func _on_set_tool(value : TOOL) -> void:
 		_gui_toolbar.button_eraser.button_pressed = true
 		_gui_toolbar.set_density_modulate(Color(1, 1, 1, 0.25))
 	if _grass_selected != null:
-		_decal_pointer.visible = _edit_tool != TOOL.NONE
+		_pointer_decal.visible = _edit_tool != TOOL.NONE
 	else:
-		_decal_pointer.visible = false
+		_pointer_decal.visible = false
 
 
 func _eval_brush() -> void:
@@ -672,19 +791,29 @@ func _eval_brush() -> void:
 		while x < _edit_radius:
 			var z := -_edit_radius
 			while z < _edit_radius:
-				var variation = Vector3(x + (randf() * steep * 0.5), 0, z + (randf() * steep * 0.5))
-				variation = _decal_pointer.to_global(variation) - _decal_pointer.global_position
+				var variation: Vector3
+				match _grass_selected.sgt_tool_shape["pencil"]:
+					TOOL_SHAPE.SPHERE, TOOL_SHAPE.CYLINDER, TOOL_SHAPE.CYLINDER_INF_H:
+						variation = Vector3(x + (randf() * steep * 0.5), 0, z + (randf() * steep * 0.5))
+						if variation.length() >= _edit_radius:
+							z += steep
+							continue
+					TOOL_SHAPE.BOX, TOOL_SHAPE.BOX_INF_H:
+						variation = Vector3(x + (randf() * steep * 0.5), 0, z + (randf() * steep * 0.5))
+					_:
+						variation = Vector3(x + (randf() * steep * 0.5), 0, z + (randf() * steep * 0.5))
+						if variation.length() >= _edit_radius:
+							z += steep
+							continue
+				variation = _pointer_decal.to_global(variation) - _pointer_decal.global_position
 				_raycast_3d.global_transform.basis.x = Vector3.RIGHT
 				_raycast_3d.global_transform.basis.y = _normal_draw * -1
 				_raycast_3d.global_transform.basis.z = Vector3.BACK
 				_raycast_3d.global_transform.origin = _position_draw + _normal_draw + variation
-				_raycast_3d.target_position = Vector3(0, DEPTH_BRUSH, 0)
+				_raycast_3d.target_position = Vector3(0, _pointer_depth, 0)
 				_raycast_3d.collision_mask = _grass_selected.collision_mask
 				_raycast_3d.force_raycast_update()
 				var pos_grass : Vector3 = _raycast_3d.get_collision_point()
-				if _position_draw.distance_to(pos_grass) >= _edit_radius:
-					z += steep
-					continue
 				if _raycast_3d.is_colliding() and _raycast_3d.get_collider() == _object_draw:
 					var normal := _raycast_3d.get_collision_normal()
 					if normal.angle_to(Vector3.UP) < slope.x or normal.angle_to(Vector3.UP) > slope.y:
@@ -705,14 +834,22 @@ func _eval_brush() -> void:
 		var follow_normal : bool = _grass_selected.sgt_follow_normal
 		var slope := Vector2(deg_to_rad(_grass_selected.sgt_slope.x), deg_to_rad(_grass_selected.sgt_slope.y))
 		for i in _edit_density:
-			var variation = Vector3.RIGHT * _edit_radius * randf()
-			variation = variation.rotated(Vector3.UP, randf() * TAU)
-			variation = _decal_pointer.to_global(variation) - _decal_pointer.global_position
+			var variation: Vector3
+			match _grass_selected.sgt_tool_shape["airbrush"]:
+				TOOL_SHAPE.SPHERE, TOOL_SHAPE.CYLINDER, TOOL_SHAPE.CYLINDER_INF_H:
+					variation = Vector3.RIGHT * _edit_radius * randf()
+					variation = variation.rotated(Vector3.UP, randf() * TAU)
+				TOOL_SHAPE.BOX, TOOL_SHAPE.BOX_INF_H:
+					variation = Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)) * _edit_radius
+				_:
+					variation = Vector3.RIGHT * _edit_radius * randf()
+					variation = variation.rotated(Vector3.UP, randf() * TAU)
+			variation = _pointer_decal.to_global(variation) - _pointer_decal.global_position
 			_raycast_3d.global_transform.basis.x = Vector3.RIGHT
 			_raycast_3d.global_transform.basis.y = _normal_draw * -1
 			_raycast_3d.global_transform.basis.z = Vector3.BACK
 			_raycast_3d.global_transform.origin = _position_draw + _normal_draw + variation
-			_raycast_3d.target_position = Vector3(0, DEPTH_BRUSH, 0)
+			_raycast_3d.target_position = Vector3(0, _pointer_depth, 0)
 			_raycast_3d.collision_mask = _grass_selected.collision_mask
 			_raycast_3d.force_raycast_update()
 			if _raycast_3d.is_colliding() and _raycast_3d.get_collider() == _object_draw:
@@ -728,6 +865,16 @@ func _eval_brush() -> void:
 					deg_to_rad(_edit_rotation) + (PI * (_edit_rotation_rand - (randf() * _edit_rotation_rand * 2.0)))
 				)
 	elif _edit_tool == TOOL.ERASER:
-		_grass_selected.erase(_position_draw - _grass_selected.global_position, _edit_radius)
+		match _grass_selected.sgt_tool_shape["eraser"]:
+			TOOL_SHAPE.SPHERE:
+				_grass_selected.erase(_position_draw - _grass_selected.global_position, _edit_radius)
+			TOOL_SHAPE.CYLINDER:
+				_grass_selected.erase_cylinder(_position_draw - _grass_selected.global_position, _edit_radius, _pointer_depth, _edit_radius, _pointer_decal.global_transform)
+			TOOL_SHAPE.CYLINDER_INF_H:
+				_grass_selected.erase_cylinder(_position_draw - _grass_selected.global_position, _edit_radius, 1000000, _edit_radius, _pointer_decal.global_transform)
+			TOOL_SHAPE.BOX:
+				_grass_selected.erase_box(_position_draw, Vector3(_edit_radius, _edit_radius, _edit_radius) * 2, _pointer_decal.global_transform)
+			TOOL_SHAPE.BOX_INF_H:
+				_grass_selected.erase_box(_position_draw - _grass_selected.global_position, Vector3(_edit_radius, 1000000, _edit_radius) * 2, _pointer_decal.global_transform)
 	if _grass_selected.multimesh != null:
 		_gui_toolbar.label_stats.text = "Count: " + str(_grass_selected.multimesh.instance_count)

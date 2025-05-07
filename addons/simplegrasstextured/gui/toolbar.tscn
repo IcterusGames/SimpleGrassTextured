@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://dsim5cbhc6kwm"]
+[gd_scene load_steps=16 format=3 uid="uid://dsim5cbhc6kwm"]
 
 [ext_resource type="Script" uid="uid://usxgr64t746m" path="res://addons/simplegrasstextured/gui/toolbar.gd" id="1_aa1o6"]
 [ext_resource type="Material" uid="uid://cl74usvfymgvs" path="res://addons/simplegrasstextured/materials/icon.material" id="2_p7k4b"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://c2kunxv5wepih" path="res://addons/simplegrasstextured/images/sgt_icon_airbrush.svg" id="4_weijg"]
 [ext_resource type="Texture2D" uid="uid://clm6vd2es8xm7" path="res://addons/simplegrasstextured/images/sgt_icon_radius.svg" id="5_55kgh"]
 [ext_resource type="Texture2D" uid="uid://dtal42g10x1ay" path="res://addons/simplegrasstextured/images/sgt_icon_pen.svg" id="5_itpep"]
+[ext_resource type="Texture2D" uid="uid://bda52g6s88x5d" path="res://addons/simplegrasstextured/images/sgt_icon_arrow_up.svg" id="5_jg7h4"]
 [ext_resource type="Texture2D" uid="uid://brugf6rnck1tk" path="res://addons/simplegrasstextured/images/sgt_icon_eraser.svg" id="6_jg7h4"]
 [ext_resource type="Texture2D" uid="uid://tqiak77omdnr" path="res://addons/simplegrasstextured/images/sgt_icon_density.svg" id="6_wboky"]
 [ext_resource type="Texture2D" uid="uid://24avwtyvf01r" path="res://addons/simplegrasstextured/images/sgt_icon_slope.svg" id="7_4wrj3"]
@@ -65,33 +66,74 @@ vertical_alignment = 2
 [node name="VSeparator" type="VSeparator" parent="."]
 layout_mode = 2
 
-[node name="ButtonAirbrush" type="Button" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ButtonAirbrush" type="Button" parent="HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Airdraw tool"
+tooltip_text = "Airdraw tool
+(right button for more options)"
 theme_type_variation = &"FlatButton"
 toggle_mode = true
 icon = ExtResource("4_weijg")
 
-[node name="ButtonPencil" type="Button" parent="."]
+[node name="AirbrushOptions" type="MenuButton" parent="HBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"FlatMenuButton"
+icon = ExtResource("5_jg7h4")
+flat = false
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ButtonPencil" type="Button" parent="HBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Pencil tool"
+tooltip_text = "Pencil tool
+(right button for more options)"
 theme_type_variation = &"FlatButton"
 toggle_mode = true
 icon = ExtResource("5_itpep")
 
-[node name="ButtonEraser" type="Button" parent="."]
+[node name="PencilOptions" type="MenuButton" parent="HBoxContainer2"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"FlatMenuButton"
+icon = ExtResource("5_jg7h4")
+flat = false
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ButtonEraser" type="Button" parent="HBoxContainer3"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Eraser tool"
+tooltip_text = "Eraser tool
+(right button for more options)"
 theme_type_variation = &"FlatButton"
 toggle_mode = true
 icon = ExtResource("6_jg7h4")
 
+[node name="EraserOptions" type="MenuButton" parent="HBoxContainer3"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"FlatMenuButton"
+icon = ExtResource("5_jg7h4")
+flat = false
+
 [node name="ButtonMore" parent="." instance=ExtResource("4_1u4kn")]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"FlatMenuButton"
+flat = false
 switch_on_hover = true
 
 [node name="VSeparator2" type="VSeparator" parent="."]

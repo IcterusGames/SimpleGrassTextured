@@ -26,6 +26,9 @@ extends MenuButton
 
 enum MENU_ID {
 	TOOL_FOLLOW_NORMAL,
+	TOOL_SHAPE_AIRBRUSH,
+	TOOL_SHAPE_PENCIL,
+	TOOL_SHAPE_ERASER,
 	AUTO_CENTER_POSITION,
 	CAST_SHADOW,
 	BAKE_HEIGHT_MAP,
@@ -35,17 +38,49 @@ enum MENU_ID {
 	RECALCULATE_AABB,
 }
 
+enum MENU_SHAPE_ID {
+	TOOL_SHAPE_SPHERE,
+	TOOL_SHAPE_CYLINDER,
+	TOOL_SHAPE_CYLINDER_INF_H,
+	TOOL_SHAPE_BOX,
+	TOOL_SHAPE_BOX_INF_H,
+}
+
 var _plugin: EditorPlugin = null
 var _grass_selected = null
-var _tools_menu :PopupMenu = null
+var _tools_menu: PopupMenu = null
+var _airbrush_shape_menu: PopupMenu = null
+var _pencil_shape_menu: PopupMenu = null
+var _eraser_shape_menu: PopupMenu = null
 
 
 func set_plugin(plugin :EditorPlugin) -> void:
 	var popup := get_popup()
 	_plugin = plugin
+	_airbrush_shape_menu = PopupMenu.new()
+	_airbrush_shape_menu.name = &"AirbrushShapeMenu"
+	_airbrush_shape_menu.add_radio_check_item("Cylinder", MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER)
+	_airbrush_shape_menu.add_radio_check_item("Box", MENU_SHAPE_ID.TOOL_SHAPE_BOX)
+	_pencil_shape_menu = PopupMenu.new()
+	_pencil_shape_menu.name = &"PencilShapeMenu"
+	_pencil_shape_menu.add_radio_check_item("Cylinder", MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER)
+	_pencil_shape_menu.add_radio_check_item("Box", MENU_SHAPE_ID.TOOL_SHAPE_BOX)
+	_eraser_shape_menu = PopupMenu.new()
+	_eraser_shape_menu.name = &"EraserShapeMenu"
+	_eraser_shape_menu.add_radio_check_item("Sphere", MENU_SHAPE_ID.TOOL_SHAPE_SPHERE)
+	_eraser_shape_menu.add_radio_check_item("Cylinder", MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER)
+	_eraser_shape_menu.add_radio_check_item("Infinite vertical cylinder", MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER_INF_H)
+	_eraser_shape_menu.add_radio_check_item("Box", MENU_SHAPE_ID.TOOL_SHAPE_BOX)
+	_eraser_shape_menu.add_radio_check_item("Infinite vertical box", MENU_SHAPE_ID.TOOL_SHAPE_BOX_INF_H)
 	_tools_menu = PopupMenu.new()
+	_tools_menu.add_child(_airbrush_shape_menu)
+	_tools_menu.add_child(_pencil_shape_menu)
+	_tools_menu.add_child(_eraser_shape_menu)
 	_tools_menu.name = &"ToolsMenu"
 	_tools_menu.add_check_item("Follow terrain's normal", MENU_ID.TOOL_FOLLOW_NORMAL)
+	_tools_menu.add_submenu_item("Airbrush shape", "AirbrushShapeMenu")
+	_tools_menu.add_submenu_item("Pencil shape", "PencilShapeMenu")
+	_tools_menu.add_submenu_item("Eraser shape", "EraserShapeMenu")
 	popup.add_child(_tools_menu)
 	popup.clear()
 	popup.add_submenu_item("Tools", "ToolsMenu")
@@ -61,6 +96,9 @@ func set_plugin(plugin :EditorPlugin) -> void:
 	popup.add_item("About SimpleGrassTextured", MENU_ID.HELP_ABOUT)
 	popup.id_pressed.connect(_on_sgt_menu_button)
 	_tools_menu.id_pressed.connect(_on_sgt_tools_menu_button)
+	_airbrush_shape_menu.id_pressed.connect(_on_sgt_shape_menu_pressed.bind("airbrush", _airbrush_shape_menu))
+	_pencil_shape_menu.id_pressed.connect(_on_sgt_shape_menu_pressed.bind("pencil", _pencil_shape_menu))
+	_eraser_shape_menu.id_pressed.connect(_on_sgt_shape_menu_pressed.bind("eraser", _eraser_shape_menu))
 	about_to_popup.connect(_on_about_to_popup)
 
 
@@ -80,6 +118,36 @@ func set_current_grass(grass_selected) -> void:
 		popup.set_item_text(popup.get_item_index(MENU_ID.BAKE_HEIGHT_MAP), "Bake height map")
 		popup.set_item_disabled(popup.get_item_index(MENU_ID.BAKE_HEIGHT_MAP), false)
 	_tools_menu.set_item_checked(_tools_menu.get_item_index(MENU_ID.TOOL_FOLLOW_NORMAL), _grass_selected.sgt_follow_normal)
+	for tool_name in _grass_selected.sgt_tool_shape:
+		match tool_name:
+			"airbrush":
+				_update_shape_menu_from_grass(_airbrush_shape_menu, _grass_selected.sgt_tool_shape[tool_name])
+			"pencil":
+				_update_shape_menu_from_grass(_pencil_shape_menu, _grass_selected.sgt_tool_shape[tool_name])
+			"eraser":
+				_update_shape_menu_from_grass(_eraser_shape_menu, _grass_selected.sgt_tool_shape[tool_name])
+
+
+func _update_shape_menu_from_grass(popupmenu: PopupMenu, plugin_id_shape: int) -> void:
+	for i in popupmenu.item_count:
+		popupmenu.set_item_checked(i, false)
+	var idx := -1
+	match _plugin.get_tool_shape_name(plugin_id_shape):
+		"sphere":
+			idx = popupmenu.get_item_index(MENU_SHAPE_ID.TOOL_SHAPE_SPHERE)
+		"cylinder":
+			idx = popupmenu.get_item_index(MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER)
+		"cylinder_inf_h":
+			idx = popupmenu.get_item_index(MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER_INF_H)
+		"box":
+			idx = popupmenu.get_item_index(MENU_SHAPE_ID.TOOL_SHAPE_BOX)
+		"box_inf_h":
+			idx = popupmenu.get_item_index(MENU_SHAPE_ID.TOOL_SHAPE_BOX_INF_H)
+		_:
+			idx = -1
+	if idx == -1:
+		return
+	popupmenu.set_item_checked(idx, true)
 
 
 func _on_sgt_menu_button(id :int) -> void:
@@ -140,8 +208,33 @@ func _on_sgt_tools_menu_button(id :int) -> void:
 		return
 	match id:
 		MENU_ID.TOOL_FOLLOW_NORMAL:
-			_tools_menu.set_item_checked(id, not _tools_menu.is_item_checked(id))
-			_grass_selected.sgt_follow_normal = _tools_menu.is_item_checked(id)
+			var idx := _tools_menu.get_item_index(id)
+			_tools_menu.set_item_checked(idx, not _tools_menu.is_item_checked(idx))
+			_grass_selected.sgt_follow_normal = _tools_menu.is_item_checked(idx)
+
+
+func _on_sgt_shape_menu_pressed(id: int, tool_name: String, popupmenu: PopupMenu) -> void:
+	if _grass_selected == null:
+		return
+	for i in popupmenu.item_count:
+		popupmenu.set_item_checked(i, false)
+	var idx := popupmenu.get_item_index(id)
+	if idx == -1:
+		return
+	popupmenu.set_item_checked(idx, true)
+	var shape_name := ""
+	match id:
+		MENU_SHAPE_ID.TOOL_SHAPE_SPHERE:
+			shape_name = "sphere"
+		MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER:
+			shape_name = "cylinder"
+		MENU_SHAPE_ID.TOOL_SHAPE_CYLINDER_INF_H:
+			shape_name = "cylinder_inf_h"
+		MENU_SHAPE_ID.TOOL_SHAPE_BOX:
+			shape_name = "box"
+		MENU_SHAPE_ID.TOOL_SHAPE_BOX_INF_H:
+			shape_name = "box_inf_h"
+	_plugin.set_tool_shape(tool_name, shape_name)
 
 
 func _on_about_to_popup() -> void:

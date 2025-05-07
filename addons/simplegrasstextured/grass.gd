@@ -114,6 +114,7 @@ var sgt_rotation_rand := 1.0
 var sgt_dist_min := 0.25
 var sgt_follow_normal := false
 var sgt_slope := Vector2(0, 45)
+var sgt_tool_shape := {}
 
 var temp_dist_min := 0.0
 
@@ -297,9 +298,57 @@ func add_grass_batch(transforms : Array):
 	_buffer_add.append_array(transforms)
 
 
-func erase(pos : Vector3, radius : float):
+func erase(pos: Vector3, radius: float) -> void:
 	if not multimesh.get_aabb().intersects(AABB(pos - Vector3(radius, radius, radius), Vector3(radius, radius, radius) * 2)):
 		return
+	_apply_erase_tool(func(array: Array[Transform3D]) -> int:
+			var num_to_erase := 0
+			for i in range(multimesh.instance_count):
+				var trans := multimesh.get_instance_transform(i)
+				if trans.origin.distance_to(pos) > radius:
+					array.append(trans)
+				else:
+					num_to_erase += 1
+			return num_to_erase
+	)
+
+
+func erase_cylinder(pos: Vector3, rx: float, height: float, rz: float, shape_transform: Transform3D) -> void:
+	var aabb := AABB(Vector3(-rx, -height / 2, -rz), Vector3(rx, height / 2, rz) * 2)
+	aabb = shape_transform * aabb
+	if not (global_transform * multimesh.get_aabb()).intersects(aabb):
+		return
+	_apply_erase_tool(func(array: Array[Transform3D]) -> int:
+			var num_to_erase := 0
+			for i in range(multimesh.instance_count):
+				var trans := multimesh.get_instance_transform(i)
+				var point := global_transform * trans.origin * shape_transform
+				var r = (point.x * point.x) / (rx * rx) + (point.z * point.z) / (rz * rz)
+				if point.y < -height or point.y > height or r >= 1:
+					array.append(trans)
+				else:
+					num_to_erase += 1
+			return num_to_erase
+	)
+
+
+func erase_box(pos: Vector3, size: Vector3, shape_transform: Transform3D) -> void:
+	var aabb := AABB(-size / 2, size)
+	if not (global_transform * multimesh.get_aabb()).intersects(shape_transform * aabb):
+		return
+	_apply_erase_tool(func(array: Array[Transform3D]) -> int:
+			var num_to_erase := 0
+			for i in range(multimesh.instance_count):
+				var trans := multimesh.get_instance_transform(i)
+				if not aabb.has_point(global_transform * trans.origin * shape_transform):
+					array.append(trans)
+				else:
+					num_to_erase += 1
+			return num_to_erase
+	)
+
+
+func _apply_erase_tool(func_tool: Callable):
 	var multi_new := MultiMesh.new()
 	var array : Array[Transform3D] = []
 	multi_new.transform_format = MultiMesh.TRANSFORM_3D
@@ -310,14 +359,7 @@ func erase(pos : Vector3, radius : float):
 	if multimesh == null:
 		multimesh = MultiMesh.new()
 		multimesh.mesh = mesh if mesh != null else _default_mesh
-	var num_to_erase := 0
-	for i in range(multimesh.instance_count):
-		var trans := multimesh.get_instance_transform(i)
-		if trans.origin.distance_to(pos) > radius:
-			array.append(trans)
-		else:
-			num_to_erase += 1
-	if num_to_erase == 0:
+	if func_tool.call(array) == 0:
 		return
 	multi_new.instance_count = array.size()
 	for i in range(array.size()):
@@ -436,6 +478,8 @@ func _update_multimesh():
 					continue
 				_buffer_add.erase(trans_add)
 				break
+		if _buffer_add.size() == 0:
+			return
 	multi_new.instance_count = count_prev + _buffer_add.size()
 	for i in range(multimesh.instance_count):
 		multi_new.set_instance_transform(i, multimesh.get_instance_transform(i))

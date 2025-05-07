@@ -41,7 +41,7 @@ func _ready() -> void:
 	get_ok_button().custom_minimum_size.x = 100
 	size.y = 250
 	await %ItchContainer.draw
-	var gui_h := max(32, %ItchContainer.size.y)
+	var gui_h: int = max(32, %ItchContainer.size.y)
 	var base_color: Color = EditorInterface.get_base_control().get_theme_color(&"base_color", &"Editor")
 	if base_color.get_luminance() < 0.5:
 		_set_icon_button(%ItchContainer, icon_itch, gui_h, 324)
