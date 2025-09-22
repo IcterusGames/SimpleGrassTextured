@@ -190,6 +190,8 @@ func _ready():
 	for isur in range(multimesh.mesh.get_surface_count()):
 		if multimesh.mesh.surface_get_material(isur) != null:
 			_material = multimesh.mesh.surface_get_material(isur)
+			if _material.get_reference_count() > 2:
+				_material = _material.duplicate()
 			break
 	for isur in range(multimesh.mesh.get_surface_count()):
 		if multimesh.mesh.surface_get_material(isur) == null:
