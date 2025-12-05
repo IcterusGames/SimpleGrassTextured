@@ -29,6 +29,7 @@ enum MENU_ID {
 	TOOL_SHAPE_AIRBRUSH,
 	TOOL_SHAPE_PENCIL,
 	TOOL_SHAPE_ERASER,
+	TOOL_SNAP_TO_TERRAIN,
 	AUTO_CENTER_POSITION,
 	CAST_SHADOW,
 	BAKE_HEIGHT_MAP,
@@ -81,6 +82,8 @@ func set_plugin(plugin :EditorPlugin) -> void:
 	_tools_menu.add_submenu_item("Airbrush shape", "AirbrushShapeMenu")
 	_tools_menu.add_submenu_item("Pencil shape", "PencilShapeMenu")
 	_tools_menu.add_submenu_item("Eraser shape", "EraserShapeMenu")
+	_tools_menu.add_separator()
+	_tools_menu.add_item("Snap to terrain", MENU_ID.TOOL_SNAP_TO_TERRAIN)
 	popup.add_child(_tools_menu)
 	popup.clear()
 	popup.add_submenu_item("Tools", "ToolsMenu")
@@ -211,6 +214,16 @@ func _on_sgt_tools_menu_button(id :int) -> void:
 			var idx := _tools_menu.get_item_index(id)
 			_tools_menu.set_item_checked(idx, not _tools_menu.is_item_checked(idx))
 			_grass_selected.sgt_follow_normal = _tools_menu.is_item_checked(idx)
+		MENU_ID.TOOL_SNAP_TO_TERRAIN:
+			_plugin.get_undo_redo().create_action(_grass_selected.name + " Snap to terrain")
+			_plugin.get_undo_redo().add_undo_property(_grass_selected, &"baked_height_map", _grass_selected.baked_height_map)
+			_plugin.get_undo_redo().add_undo_property(_grass_selected, &"multimesh", _grass_selected.multimesh.duplicate())
+			_plugin.get_undo_redo().add_undo_property(_grass_selected, &"global_position", _grass_selected.global_position)
+			_grass_selected.snap_to_terrain()
+			_plugin.get_undo_redo().add_do_property(_grass_selected, &"baked_height_map", _grass_selected.baked_height_map)
+			_plugin.get_undo_redo().add_do_property(_grass_selected, &"multimesh", _grass_selected.multimesh)
+			_plugin.get_undo_redo().add_do_property(_grass_selected, &"global_position", _grass_selected.global_position)
+			_plugin.get_undo_redo().commit_action()
 
 
 func _on_sgt_shape_menu_pressed(id: int, tool_name: String, popupmenu: PopupMenu) -> void:

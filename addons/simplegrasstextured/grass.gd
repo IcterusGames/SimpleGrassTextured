@@ -350,6 +350,35 @@ func erase_box(pos: Vector3, size: Vector3, shape_transform: Transform3D) -> voi
 	)
 
 
+func snap_to_terrain() -> void:
+	await get_tree().physics_frame
+	for i in multimesh.instance_count:
+		var trans := multimesh.get_instance_transform(i)
+		var origin_ws := to_global(trans.origin)
+		var rc = _raycast(self, origin_ws + Vector3.UP * 100, Vector3.DOWN, 1000, collision_mask)
+		if not rc:
+			continue
+		trans.origin = to_local(rc["position"])
+		var normal : Vector3 = rc["normal"] if sgt_follow_normal else Vector3.UP
+		if abs(normal.z) == 1:
+			trans.basis.x = Vector3(1, 0, 0)
+			trans.basis.y = Vector3(0, 0, normal.z)
+			trans.basis.z = Vector3(0, normal.z, 0)
+			trans.basis = trans.basis.orthonormalized()
+		else:
+			trans.basis.y = normal
+			trans.basis.x = normal.cross(trans.basis.z)
+			trans.basis.z = trans.basis.x.cross(normal)
+		multimesh.set_instance_transform(i, trans)
+	recalculate_custom_aabb()
+
+
+static func _raycast(from: Node3D, pos: Vector3, dir: Vector3, dist: float, mask: int) -> Dictionary:
+	var space_state = from.get_world_3d().direct_space_state
+	var query = PhysicsRayQueryParameters3D.create(pos, pos + dir * dist, mask, [from])
+	return space_state.intersect_ray(query)
+
+
 func _apply_erase_tool(func_tool: Callable):
 	var multi_new := MultiMesh.new()
 	var array : Array[Transform3D] = []
