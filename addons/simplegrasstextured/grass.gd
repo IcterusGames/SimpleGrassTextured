@@ -637,9 +637,9 @@ func _update_height_map() -> void:
 		0,
 		(aabb.position.z + (aabb.size.z / 2.0))
 	)
-	_node_height_map.global_position = global_position + align
+	_node_height_map.global_position = global_position + (global_basis * align)
+	_node_height_map.global_rotation = global_rotation
 	_node_height_map.visible = visible
-
 
 func _update_material_shader() -> bool:
 	var shader_name := "grass"

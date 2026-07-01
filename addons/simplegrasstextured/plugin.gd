@@ -819,7 +819,7 @@ func _eval_brush() -> void:
 					if not follow_normal:
 						normal = Vector3.UP
 					list_trans.append(_grass_selected.eval_grass_transform(
-						_raycast_3d.get_collision_point() - _grass_selected.global_position,
+						_grass_selected.to_local(_raycast_3d.get_collision_point()),
 						normal,
 						_edit_scale,
 						deg_to_rad(_edit_rotation) + (PI * (_edit_rotation_rand - (randf() * _edit_rotation_rand * 2.0)))
@@ -856,7 +856,7 @@ func _eval_brush() -> void:
 				if not follow_normal:
 					normal = Vector3.UP
 				_grass_selected.add_grass(
-					_raycast_3d.get_collision_point() - _grass_selected.global_position,
+					_grass_selected.to_local(_raycast_3d.get_collision_point()),
 					normal,
 					_edit_scale,
 					deg_to_rad(_edit_rotation) + (PI * (_edit_rotation_rand - (randf() * _edit_rotation_rand * 2.0)))
@@ -864,7 +864,7 @@ func _eval_brush() -> void:
 	elif _edit_tool == TOOL.ERASER:
 		match _grass_selected.sgt_tool_shape["eraser"]:
 			TOOL_SHAPE.SPHERE:
-				_grass_selected.erase(_position_draw - _grass_selected.global_position, _edit_radius)
+				_grass_selected.erase(_grass_selected.to_local(_position_draw), _edit_radius)
 			TOOL_SHAPE.CYLINDER:
 				_grass_selected.erase_cylinder(_edit_radius, _pointer_depth, _edit_radius, _pointer_decal.global_transform)
 			TOOL_SHAPE.CYLINDER_INF_H:
