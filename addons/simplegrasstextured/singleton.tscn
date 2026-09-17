@@ -88,6 +88,7 @@ mesh = SubResource("QuadMesh_2vmyu")
 
 [node name="Normal" type="SubViewport" parent="." unique_id=963677992]
 disable_3d = true
+use_hdr_2d = true
 size_2d_override = Vector2i(512, 512)
 render_target_update_mode = 1
 
@@ -101,6 +102,7 @@ grow_vertical = 2
 
 [node name="Blur1" type="SubViewport" parent="." unique_id=902023883]
 disable_3d = true
+use_hdr_2d = true
 size_2d_override = Vector2i(512, 512)
 render_target_update_mode = 1
 
@@ -114,6 +116,7 @@ grow_vertical = 2
 
 [node name="Blur2" type="SubViewport" parent="." unique_id=204112571]
 disable_3d = true
+use_hdr_2d = true
 size_2d_override = Vector2i(512, 512)
 render_target_update_mode = 1
 
